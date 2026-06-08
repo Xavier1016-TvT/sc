@@ -1,0 +1,300 @@
+import { useState } from 'react'
+import { Link, useParams, useNavigate } from 'react-router-dom'
+import { useData } from '../context/DataContext'
+import {
+  getOrderMetrics,
+  formatPercent,
+  formatDefectRate,
+  getOrderUnit,
+  formatQty,
+} from '../utils/calculations'
+import OrderSampleSection from '../components/OrderSampleSection'
+import OrderMaterialSection from '../components/OrderMaterialSection'
+import SubProjectSummaryTable from '../components/SubProjectSummaryTable'
+import { ORDER_UNITS } from '../utils/constants'
+import { defaultSampleInfo, defaultMaterialPrep } from '../utils/orderSync'
+
+export default function OrderDetail() {
+  const { orderId } = useParams()
+  const navigate = useNavigate()
+  const { getOrder, addSubProject, updateSubProject, deleteSubProject, updateOrder, manufacturers, addManufacturer } = useData()
+  const order = getOrder(orderId)
+  const [newSubName, setNewSubName] = useState('')
+  const [editingSub, setEditingSub] = useState(null)
+  const [newMfr, setNewMfr] = useState('')
+
+  if (!order) {
+    return (
+      <div className="card text-center py-12">
+        <p className="text-slate-500">订单不存在</p>
+        <Link to="/" className="btn-primary mt-4 inline-block">返回首页</Link>
+      </div>
+    )
+  }
+
+  const metrics = getOrderMetrics(order)
+  const unit = getOrderUnit(order)
+  const hasSubProjects = (order.subProjects || []).length > 0
+  const sampleInfo = order.sampleInfo || defaultSampleInfo()
+  const materialPrep = order.materialPrep || defaultMaterialPrep()
+
+  const patchSample = (patch) =>
+    updateOrder(orderId, { sampleInfo: { ...sampleInfo, ...patch } })
+
+  const patchMaterialPrep = (patch) =>
+    updateOrder(orderId, { materialPrep: { ...materialPrep, ...patch } })
+
+  const advanceStatus = (next) => {
+    if (window.confirm(`确认将订单流转至「${next}」？`)) {
+      const patch = { status: next }
+      if (next === '生产中' && !order.manufacturer && manufacturers[0]) {
+        patch.manufacturer = manufacturers[0]
+      }
+      updateOrder(orderId, patch)
+    }
+  }
+
+  if (order.status === '未下单') {
+    return (
+      <div className="space-y-4">
+        <WorkflowHeader order={order} onAdvance={() => advanceStatus('生产中')} nextLabel="进入生产 →" />
+
+        <div className="card">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="label-text">订单名称</label>
+              <input
+                className="input-field"
+                value={order.name}
+                onChange={(e) => updateOrder(orderId, { name: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="label-text">订单数量</label>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  min="0"
+                  className="input-field flex-1"
+                  value={order.quantity}
+                  onChange={(e) => updateOrder(orderId, { quantity: Number(e.target.value) })}
+                />
+                <select
+                  className="input-field w-24 shrink-0"
+                  value={unit}
+                  onChange={(e) => updateOrder(orderId, { quantityUnit: e.target.value })}
+                >
+                  {ORDER_UNITS.map((u) => (
+                    <option key={u} value={u}>{u}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <OrderSampleSection
+          sampleInfo={sampleInfo}
+          onChange={patchSample}
+          defaultOpen
+        />
+        <OrderMaterialSection
+          materialPrep={materialPrep}
+          onChange={patchMaterialPrep}
+          hasSubProjects={hasSubProjects}
+        />
+      </div>
+    )
+  }
+
+  if (order.status === '已结单') {
+    return (
+      <div className="space-y-4">
+        <WorkflowHeader order={order} />
+
+        <div className="card">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <Stat label="订单名称" value={order.name} />
+            <Stat label="订单数量" value={formatQty(order.quantity, unit)} />
+            <Stat label="出货数量" value={formatQty(metrics.cumulativeShipping, unit)} highlight />
+          </div>
+        </div>
+
+        {order.subProjects?.length > 0 && (
+          <div className="card">
+            <h3 className="text-base font-semibold text-slate-800 mb-4">子项目汇总</h3>
+            <SubProjectSummaryTable
+              orderId={orderId}
+              order={order}
+              subProjects={order.subProjects}
+              variant="closed"
+            />
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // 生产中
+  const handleAddSub = () => {
+    const name = newSubName.trim() || '新子项目'
+    const id = addSubProject(orderId, name)
+    setNewSubName('')
+    navigate(`/order/${orderId}/sub/${id}`)
+  }
+
+  const handleDeleteSub = (sub) => {
+    if (window.confirm(`确定删除子项目「${sub.name}」？`)) {
+      deleteSubProject(orderId, sub.id)
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      <WorkflowHeader order={order} onAdvance={() => advanceStatus('已结单')} nextLabel="结单 →" />
+
+      <div className="card">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-bold text-slate-800">{order.name}</h2>
+            <div className="flex flex-wrap gap-3 mt-2 text-sm text-slate-500 items-center">
+              <span>数量：{formatQty(order.quantity, unit)}</span>
+              <span className="flex items-center gap-2">
+                <span>贴片厂：</span>
+                <select
+                  className="input-field py-1 w-auto min-w-[120px] text-sm"
+                  value={order.manufacturer || manufacturers[0] || ''}
+                  onChange={(e) => updateOrder(orderId, { manufacturer: e.target.value })}
+                >
+                  {manufacturers.map((m) => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+              </span>
+              <span>交期：{order.deliveryDate || '未设置'}</span>
+            </div>
+            <div className="flex gap-2 mt-2 max-w-md">
+              <input
+                className="input-field py-1 text-sm flex-1"
+                placeholder="新增贴片厂家"
+                value={newMfr}
+                onChange={(e) => setNewMfr(e.target.value)}
+              />
+              <button
+                type="button"
+                className="btn-secondary text-xs shrink-0"
+                onClick={() => {
+                  if (newMfr.trim()) {
+                    addManufacturer(newMfr.trim())
+                    updateOrder(orderId, { manufacturer: newMfr.trim() })
+                    setNewMfr('')
+                  }
+                }}
+              >
+                添加厂家
+              </button>
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-4 border-t border-slate-100">
+          <Stat label="累计出货" value={formatQty(metrics.cumulativeShipping, unit)} />
+          <Stat label="完成率" value={formatPercent(metrics.completionRate)} />
+          <Stat label="不良合计" value={`${metrics.totalDefects} 个`} />
+          <Stat label="不良率" value={formatDefectRate(metrics.defectRate)} />
+        </div>
+      </div>
+
+      <OrderSampleSection sampleInfo={sampleInfo} onChange={patchSample} />
+      <OrderMaterialSection
+        materialPrep={materialPrep}
+        onChange={patchMaterialPrep}
+        hasSubProjects={hasSubProjects}
+      />
+
+      <div className="card">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <h3 className="text-base font-semibold text-slate-800">子项目列表</h3>
+          <div className="flex gap-2">
+            <input
+              className="input-field w-48"
+              placeholder="子项目名称"
+              value={newSubName}
+              onChange={(e) => setNewSubName(e.target.value)}
+            />
+            <button type="button" className="btn-primary" onClick={handleAddSub}>
+              + 新增子项目
+            </button>
+          </div>
+        </div>
+
+        <SubProjectSummaryTable
+          orderId={orderId}
+          order={order}
+          subProjects={order.subProjects}
+          editable
+          editingSub={editingSub}
+          onEditName={(subId, name) => {
+            updateSubProject(orderId, subId, { name })
+            setEditingSub(null)
+          }}
+          onStartRename={setEditingSub}
+          onDelete={handleDeleteSub}
+        />
+      </div>
+    </div>
+  )
+}
+
+function WorkflowHeader({ order, onAdvance, nextLabel }) {
+  const steps = ['未下单', '生产中', '已结单']
+  const currentIdx = steps.indexOf(order.status)
+
+  return (
+    <>
+      <nav className="text-sm text-slate-500">
+        <Link to="/" className="hover:text-primary-600">首页</Link>
+        <span className="mx-2">/</span>
+        <span className="text-slate-800">{order.name}</span>
+      </nav>
+
+      <div className="card">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            {steps.map((step, i) => (
+              <div key={step} className="flex items-center gap-2">
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    i === currentIdx
+                      ? 'bg-primary-600 text-white'
+                      : i < currentIdx
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : 'bg-slate-100 text-slate-400'
+                  }`}
+                >
+                  {step}
+                </span>
+                {i < steps.length - 1 && <span className="text-slate-300">→</span>}
+              </div>
+            ))}
+          </div>
+          {onAdvance && nextLabel && (
+            <button type="button" className="btn-primary" onClick={onAdvance}>
+              {nextLabel}
+            </button>
+          )}
+        </div>
+      </div>
+    </>
+  )
+}
+
+function Stat({ label, value, highlight }) {
+  return (
+    <div>
+      <p className="text-xs text-slate-500">{label}</p>
+      <p className={`text-lg font-semibold ${highlight ? 'text-primary-600' : 'text-slate-800'}`}>
+        {value}
+      </p>
+    </div>
+  )
+}
