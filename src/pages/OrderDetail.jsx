@@ -310,6 +310,8 @@ export default function OrderDetail() {
         materialPrep={materialPrep}
         onChange={patchMaterialPrep}
         hasSubProjects={hasSubProjects}
+        subProjects={order.subProjects}
+        orderId={orderId}
       />
 
       <div className="card">

@@ -22,6 +22,23 @@ export function getShortageItems(items = []) {
   return items.filter((it) => getItemShortage(it) > 0)
 }
 
+/** 各子项目缺料概况（仅含存在缺料的子项目） */
+export function getSubProjectShortageSummaries(subProjects = []) {
+  return (subProjects || [])
+    .map((sub) => {
+      const items = sub.materialStatus?.items || []
+      const shortageKinds = countShortageKinds(items)
+      if (shortageKinds === 0) return null
+      return {
+        subId: sub.id,
+        subName: sub.name || '未命名子项目',
+        shortageKinds,
+        items: getShortageItems(items),
+      }
+    })
+    .filter(Boolean)
+}
+
 function itemKey(item) {
   return [item.code, item.name, item.spec].map((v) => String(v || '').trim()).join('||')
 }

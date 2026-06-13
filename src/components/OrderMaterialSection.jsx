@@ -2,7 +2,13 @@ import CollapsibleSection from './CollapsibleSection'
 import MaterialTable from './MaterialTable'
 import { getMaterialSubtitle } from '../utils/materialAggregate'
 
-export default function OrderMaterialSection({ materialPrep, onChange, hasSubProjects = false }) {
+export default function OrderMaterialSection({
+  materialPrep,
+  onChange,
+  hasSubProjects = false,
+  subProjects = [],
+  orderId,
+}) {
   const prep = materialPrep || { option: '备料中', note: '', file: null, items: [] }
 
   return (
@@ -16,6 +22,8 @@ export default function OrderMaterialSection({ materialPrep, onChange, hasSubPro
           onChange={onChange}
           variant={hasSubProjects ? 'summary' : 'edit'}
           readOnly={hasSubProjects}
+          subProjects={hasSubProjects ? subProjects : []}
+          orderId={orderId}
         />
       </div>
     </CollapsibleSection>

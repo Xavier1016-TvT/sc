@@ -1,13 +1,15 @@
+import { Link } from 'react-router-dom'
 import { useRef } from 'react'
 import { createMaterialItem } from '../utils/defaults'
 import { MATERIAL_OPTIONS, MATERIAL_TYPES } from '../utils/constants'
 import FilePreviewTrigger from './FilePreviewTrigger'
 import { parseMaterialFileToItems } from '../utils/parseMaterialImport'
-import { readFileAsDataUrl } from '../utils/fileHelpers'
+import { readFileAsDataUrl, readFileLocally } from '../utils/fileHelpers'
 import {
   countShortageKinds,
   getShortageItems,
   getItemShortage,
+  getSubProjectShortageSummaries,
 } from '../utils/materialAggregate'
 
 const EDIT_TEXT_COLS = [
@@ -21,11 +23,41 @@ const EDIT_NUM_COLS = [
   { field: 'received', label: '实到数', minW: 'min-w-[88px]' },
 ]
 
+const SHORTAGE_HEADERS = ['编码', '物料名称', '规格', '缺料数', '物料类型', '备注']
+
+function ShortageItemsTable({ items }) {
+  return (
+    <table className="material-table min-w-[960px]">
+      <thead className="bg-red-100/60">
+        <tr>
+          {SHORTAGE_HEADERS.map((h) => (
+            <th key={h} className="table-th text-red-800">{h}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-red-100">
+        {items.map((it) => (
+          <tr key={it.id}>
+            <td className="table-td font-medium text-red-900 whitespace-nowrap">{it.code || '—'}</td>
+            <td className="table-td text-red-900">{it.name || '—'}</td>
+            <td className="table-td text-red-800">{it.spec || '—'}</td>
+            <td className="table-td font-semibold text-red-700 tabular-nums">{getItemShortage(it)}</td>
+            <td className="table-td whitespace-nowrap">{it.type || '—'}</td>
+            <td className="table-td text-red-800">{it.note || '—'}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
+
 export default function MaterialTable({
   materialStatus,
   onChange,
   variant = 'edit',
   readOnly = false,
+  subProjects = [],
+  orderId,
 }) {
   const { option, note, file, items = [] } = materialStatus
   const isSummary = variant === 'summary'
@@ -47,7 +79,8 @@ export default function MaterialTable({
     }
 
     try {
-      const { items: parsed, kind } = parseMaterialFileToItems(rawFile)
+      const localFile = await readFileLocally(rawFile)
+      const { items: parsed, kind } = parseMaterialFileToItems(localFile)
       const cloudFile = await readFileAsDataUrl(rawFile)
 
       if (kind === 'image') {
@@ -93,6 +126,9 @@ export default function MaterialTable({
   const removeRow = (id) => update({ items: items.filter((it) => it.id !== id) })
 
   if (isSummary) {
+    const subShortages = getSubProjectShortageSummaries(subProjects)
+    const showPerSub = subProjects.length > 1 && subShortages.length > 0
+
     return (
       <div className="space-y-4">
         <div className="flex flex-wrap items-center gap-3">
@@ -111,30 +147,69 @@ export default function MaterialTable({
         </div>
         {note && <p className="text-xs text-slate-500">{note}</p>}
 
-        {shortageKinds > 0 ? (
-          <div className="overflow-x-auto -mx-1 px-1 border border-red-100 rounded-lg bg-red-50/40">
-            <table className="material-table min-w-[960px]">
-              <thead className="bg-red-100/60">
-                <tr>
-                  {['编码', '物料名称', '规格', '缺料数', '物料类型', '备注'].map((h) => (
-                    <th key={h} className="table-th text-red-800">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-red-100">
-                {shortageItems.map((it) => (
-                  <tr key={it.id}>
-                    <td className="table-td font-medium text-red-900 whitespace-nowrap">{it.code || '—'}</td>
-                    <td className="table-td text-red-900">{it.name || '—'}</td>
-                    <td className="table-td text-red-800">{it.spec || '—'}</td>
-                    <td className="table-td font-semibold text-red-700 tabular-nums">{getItemShortage(it)}</td>
-                    <td className="table-td whitespace-nowrap">{it.type || '—'}</td>
-                    <td className="table-td text-red-800">{it.note || '—'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {showPerSub && (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs text-slate-500">缺料子项目：</span>
+            {subShortages.map((s) => (
+              <span
+                key={s.subId}
+                className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700 ring-1 ring-red-200"
+              >
+                {orderId ? (
+                  <Link to={`/order/${orderId}/sub/${s.subId}`} className="hover:underline">
+                    {s.subName}
+                  </Link>
+                ) : (
+                  s.subName
+                )}
+                · 缺 {s.shortageKinds} 种
+              </span>
+            ))}
           </div>
+        )}
+
+        {shortageKinds > 0 ? (
+          showPerSub ? (
+            <div className="space-y-4">
+              {subShortages.map((s) => (
+                <div
+                  key={s.subId}
+                  className="overflow-x-auto -mx-1 px-1 border border-red-100 rounded-lg bg-red-50/40 p-3"
+                >
+                  <div className="text-sm font-semibold text-red-800 mb-2">
+                    {orderId ? (
+                      <Link to={`/order/${orderId}/sub/${s.subId}`} className="hover:underline">
+                        {s.subName}
+                      </Link>
+                    ) : (
+                      s.subName
+                    )}
+                    <span className="text-red-600 font-normal"> · 缺料 {s.shortageKinds} 种</span>
+                  </div>
+                  <ShortageItemsTable items={s.items} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="overflow-x-auto -mx-1 px-1 border border-red-100 rounded-lg bg-red-50/40">
+              {subProjects.length === 1 && subShortages.length === 1 && (
+                <p className="text-sm font-medium text-red-800 px-3 pt-3">
+                  子项目：
+                  {orderId ? (
+                    <Link
+                      to={`/order/${orderId}/sub/${subShortages[0].subId}`}
+                      className="hover:underline ml-1"
+                    >
+                      {subShortages[0].subName}
+                    </Link>
+                  ) : (
+                    subShortages[0].subName
+                  )}
+                </p>
+              )}
+              <ShortageItemsTable items={shortageItems} />
+            </div>
+          )
         ) : (
           <p className="text-sm text-emerald-700 bg-emerald-50 rounded-lg px-4 py-3">
             各子项目物料已齐，当前无缺料项
@@ -203,7 +278,11 @@ export default function MaterialTable({
             type="file"
             className="hidden"
             accept=".xlsx,.xls,.wps,.csv,.jpg,.jpeg,.png"
-            onChange={(e) => handleFileImport(e.target.files?.[0] || null)}
+            onChange={(e) => {
+              const picked = e.target.files?.[0] || null
+              handleFileImport(picked)
+              e.target.value = ''
+            }}
           />
           <p className="text-xs text-slate-400 mt-1 mb-4">
             Excel / CSV 按表头自动填入明细；缺料数列显示具体数量

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import StatusBadge from './StatusBadge'
 import OrderTypeBadge from './OrderTypeBadge'
 import { isLargeOrder } from '../utils/orderWorkflow'
-import { formatPercent, formatDefectRate, formatQty, getOrderUnit } from '../utils/calculations'
+import { formatQty, getOrderUnit, formatOrderDocConfirmation, getOrderMaterialStatusText } from '../utils/calculations'
 
 export default function OrderTable({ orders, orderMetrics, onEdit, onDelete, mode = '全部', searchQuery = '' }) {
   if (!orders.length) {
@@ -97,42 +97,54 @@ export default function OrderTable({ orders, orderMetrics, onEdit, onDelete, mod
     <TableShell title={mode === '生产中' ? '生产中订单' : '订单一览'}>
       <thead className="bg-slate-50">
         <tr>
-          <th className="table-th">订单名称</th>
-          <th className="table-th">类型</th>
-          <th className="table-th">贴片厂家</th>
+          <th className="table-th">厂家</th>
           <th className="table-th">状态</th>
-          <th className="table-th">订单数量</th>
-          <th className="table-th">子项目数</th>
+          <th className="table-th">资料确认</th>
+          <th className="table-th">物料状态</th>
+          <th className="table-th">订单数</th>
           <th className="table-th">已出货</th>
           <th className="table-th">已贴回</th>
-          <th className="table-th">不良合计</th>
-          <th className="table-th">完成率</th>
-          <th className="table-th">不良率</th>
           <th className="table-th">操作</th>
         </tr>
       </thead>
       <tbody className="divide-y divide-slate-100">
         {orders.map((order) => {
           const m = metricsMap[order.id]
+          const docText = formatOrderDocConfirmation(order)
+          const materialText = getOrderMaterialStatusText(order)
+          const docDone = docText !== '—' && docText.includes('已确认')
+          const materialShortage = /缺料/.test(materialText)
           return (
             <tr key={order.id} className="hover:bg-slate-50/50">
-              <td className="table-td font-medium">{order.name}</td>
-              <td className="table-td"><OrderTypeBadge type={order.orderType} /></td>
-              <td className="table-td">{order.manufacturer || '—'}</td>
+              <td className="table-td">
+                <div className="font-medium text-slate-800">{order.manufacturer || '—'}</div>
+                <Link
+                  to={`/order/${order.id}`}
+                  className="text-xs text-primary-600 hover:underline"
+                >
+                  {order.name}
+                </Link>
+              </td>
               <td className="table-td">
                 <StatusBadge status={order.status} type="order" />
               </td>
+              <td className="table-td">
+                <span className={docDone ? 'text-emerald-700' : 'text-amber-700'}>{docText}</span>
+              </td>
+              <td className="table-td">
+                <span className={materialShortage ? 'text-red-700' : 'text-slate-700'}>
+                  {materialText}
+                </span>
+              </td>
               <td className="table-td">{formatQty(order.quantity, getOrderUnit(order))}</td>
-              <td className="table-td">{m?.subProjectCount ?? 0}</td>
-              <td className="table-td">{formatQty(m?.cumulativeShipping ?? 0, m?.unit ?? getOrderUnit(order))}</td>
+              <td className="table-td font-medium text-primary-600">
+                {formatQty(m?.cumulativeShipping ?? 0, m?.unit ?? getOrderUnit(order))}
+              </td>
               <td className="table-td">
                 {isLargeOrder(order)
                   ? '—'
                   : formatQty(m?.cumulativeReturned ?? 0, m?.unit ?? getOrderUnit(order))}
               </td>
-              <td className="table-td">{m?.totalDefects ?? 0} 个</td>
-              <td className="table-td">{formatPercent(m?.completionRate ?? 0)}</td>
-              <td className="table-td">{formatDefectRate(m?.defectRate ?? 0)}</td>
               <td className="table-td">
                 <Actions order={order} onEdit={onEdit} onDelete={onDelete} />
               </td>

@@ -1,4 +1,4 @@
-import { countShortageKinds } from './materialAggregate'
+import { countShortageKinds, aggregateMaterialFromSubProjects, getMaterialSubtitle } from './materialAggregate'
 import { isLargeOrder, isSmallOrder } from './orderWorkflow'
 
 /** 子项目不良数量 = 出货不良统计累加 */
@@ -188,6 +188,35 @@ export function getOrderDefectRate(order) {
 /** 剩余数量 */
 export function getOrderRemaining(order) {
   return Math.max(0, (Number(order.quantity) || 0) - getOrderProgressTotal(order))
+}
+
+/** 整单资料确认进度（各子项目合计） */
+export function getOrderDocConfirmationSummary(order) {
+  const subs = order.subProjects || []
+  if (!subs.length) return { confirmed: 0, total: 0 }
+  let confirmed = 0
+  let total = 0
+  subs.forEach((sp) => {
+    const s = getDocConfirmationSummary(sp)
+    confirmed += s.confirmed
+    total += s.total
+  })
+  return { confirmed, total }
+}
+
+export function formatOrderDocConfirmation(order) {
+  const { confirmed, total } = getOrderDocConfirmationSummary(order)
+  if (!total) return '—'
+  return confirmed >= total ? `${confirmed}/${total} 已确认` : `${confirmed}/${total}`
+}
+
+/** 整单物料状态文案 */
+export function getOrderMaterialStatusText(order) {
+  const subs = order.subProjects || []
+  if (subs.length) {
+    return getMaterialSubtitle(aggregateMaterialFromSubProjects(subs))
+  }
+  return getMaterialSubtitle(order.materialPrep || {})
 }
 
 export function getOrderMetrics(order) {

@@ -22,7 +22,11 @@ export function isCsvFile(file) {
 }
 
 export function isSpreadsheetFile(file) {
-  return /\.(xlsx|xls|wps)$/i.test(file?.name || '')
+  if (!file) return false
+  const name = file.name || ''
+  const type = file.type || ''
+  if (/\.(xlsx|xls|wps)$/i.test(name)) return true
+  return /spreadsheet|excel|sheet/i.test(type)
 }
 
 export function dataUrlToText(dataUrl) {
