@@ -102,15 +102,15 @@ export default function SubProjectDetail() {
 
       <CollapsibleSection
         title="资料确认"
-        subtitle={`${sub.docConfirmations.filter((d) => d.status === '已确认').length}/${sub.docConfirmations.length} 已确认`}
+        subtitle={`${sub.docConfirmations?.filter((d) => d.status === '已确认').length || 0}/${sub.docConfirmations?.length || 0} 已确认`}
       >
         <div className="pt-4">
           <DocConfirmationSection
             items={sub.docConfirmations}
             onChange={(docConfirmations) => patch({ docConfirmations })}
-            onAdd={(doc) => patch({ docConfirmations: [...sub.docConfirmations, doc] })}
+            onAdd={(doc) => patch({ docConfirmations: [...(sub.docConfirmations || []), doc] })}
             onRemove={(id) =>
-              patch({ docConfirmations: sub.docConfirmations.filter((d) => d.id !== id) })
+              patch({ docConfirmations: (sub.docConfirmations || []).filter((d) => d.id !== id) })
             }
           />
         </div>

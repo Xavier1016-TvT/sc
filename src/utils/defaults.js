@@ -1,5 +1,5 @@
 import { generateId } from './id'
-import { DEFAULT_DOC_ITEMS, DEFAULT_MANUFACTURERS } from './constants'
+import { DEFAULT_MANUFACTURERS } from './constants'
 
 export function createDocConfirmation(name) {
   return {
@@ -35,7 +35,7 @@ export function createSubProject(name = '新子项目') {
     name,
     quantity: null,
     sampleStatus: '进行中',
-    docConfirmations: DEFAULT_DOC_ITEMS.map(createDocConfirmation),
+    docConfirmations: [],
     materialStatus: {
       option: '备料中',
       note: '',

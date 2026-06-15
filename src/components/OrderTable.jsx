@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import StatusBadge from './StatusBadge'
 import OrderTypeBadge from './OrderTypeBadge'
 import { isLargeOrder } from '../utils/orderWorkflow'
-import { formatQty, getOrderUnit, formatOrderDocConfirmation, getOrderMaterialStatusText } from '../utils/calculations'
+import { formatQty, getOrderUnit, formatOrderDocConfirmation, getOrderMaterialStatusText, hasOrderMaterialShortage, isOrderMaterialComplete } from '../utils/calculations'
 
 export default function OrderTable({ orders, orderMetrics, onEdit, onDelete, mode = '全部', searchQuery = '' }) {
   if (!orders.length) {
@@ -97,7 +97,7 @@ export default function OrderTable({ orders, orderMetrics, onEdit, onDelete, mod
     <TableShell title={mode === '生产中' ? '生产中订单' : '订单一览'}>
       <thead className="bg-slate-50">
         <tr>
-          <th className="table-th">厂家</th>
+          <th className="table-th">订单</th>
           <th className="table-th">状态</th>
           <th className="table-th">资料确认</th>
           <th className="table-th">物料状态</th>
@@ -113,17 +113,20 @@ export default function OrderTable({ orders, orderMetrics, onEdit, onDelete, mod
           const docText = formatOrderDocConfirmation(order)
           const materialText = getOrderMaterialStatusText(order)
           const docDone = docText !== '—' && docText.includes('已确认')
-          const materialShortage = /缺料/.test(materialText)
+          const materialShortage = hasOrderMaterialShortage(order)
+          const materialComplete = isOrderMaterialComplete(order)
           return (
             <tr key={order.id} className="hover:bg-slate-50/50">
               <td className="table-td">
-                <div className="font-medium text-slate-800">{order.manufacturer || '—'}</div>
                 <Link
                   to={`/order/${order.id}`}
-                  className="text-xs text-primary-600 hover:underline"
+                  className="font-medium text-slate-800 hover:text-primary-600 hover:underline"
                 >
                   {order.name}
                 </Link>
+                {order.manufacturer && (
+                  <div className="text-xs text-slate-400 mt-0.5">{order.manufacturer}</div>
+                )}
               </td>
               <td className="table-td">
                 <StatusBadge status={order.status} type="order" />
@@ -132,7 +135,15 @@ export default function OrderTable({ orders, orderMetrics, onEdit, onDelete, mod
                 <span className={docDone ? 'text-emerald-700' : 'text-amber-700'}>{docText}</span>
               </td>
               <td className="table-td">
-                <span className={materialShortage ? 'text-red-700' : 'text-slate-700'}>
+                <span
+                  className={
+                    materialShortage
+                      ? 'text-red-700'
+                      : materialComplete
+                        ? 'text-emerald-700'
+                        : 'text-slate-700'
+                  }
+                >
                   {materialText}
                 </span>
               </td>

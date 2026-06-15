@@ -219,6 +219,24 @@ export function getOrderMaterialStatusText(order) {
   return getMaterialSubtitle(order.materialPrep || {})
 }
 
+export function hasOrderMaterialShortage(order) {
+  const subs = order.subProjects || []
+  if (subs.length) {
+    return countShortageKinds(aggregateMaterialFromSubProjects(subs).items) > 0
+  }
+  return countShortageKinds(order.materialPrep?.items || []) > 0
+}
+
+export function isOrderMaterialComplete(order) {
+  const subs = order.subProjects || []
+  if (subs.length) {
+    const agg = aggregateMaterialFromSubProjects(subs)
+    return agg.option === '料齐' && !hasOrderMaterialShortage(order)
+  }
+  const prep = order.materialPrep || {}
+  return prep.option === '料齐' && !hasOrderMaterialShortage(order)
+}
+
 export function getOrderMetrics(order) {
   const cumulativeShipping = getOrderCumulativeShipping(order)
   const cumulativeReturned = getOrderCumulativeReturned(order)

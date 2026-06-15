@@ -68,10 +68,10 @@ export default function ReturnRecordsTable({ records, onChange, subProject }) {
                     />
                   )}
                 </td>
-                <td className="table-td p-1 min-w-[140px]">
-                  <input
-                    type="text"
-                    className="input-field py-1"
+                <td className="table-td p-1 min-w-[160px] align-top">
+                  <textarea
+                    className="input-field textarea-compact w-full min-w-[140px]"
+                    rows={2}
                     value={r.note || ''}
                     placeholder="备注"
                     onChange={(e) => update(r.id, { note: e.target.value })}

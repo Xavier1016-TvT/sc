@@ -29,7 +29,13 @@ body {
     @apply w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-400;
   }
   .textarea-field {
-    @apply w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-400 min-h-[120px] resize-y leading-relaxed;
+    @apply w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-400 min-h-[80px] resize-y leading-relaxed;
+  }
+  .textarea-compact {
+    @apply resize-y min-h-[2.5rem] leading-relaxed;
+  }
+  .material-table .textarea-compact {
+    @apply min-h-[36px] text-sm;
   }
   .label-text {
     @apply block text-sm font-medium text-slate-600 mb-1;

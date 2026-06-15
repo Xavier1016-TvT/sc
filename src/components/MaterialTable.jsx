@@ -133,7 +133,18 @@ export default function MaterialTable({
       <div className="space-y-4">
         <div className="flex flex-wrap items-center gap-3">
           <span className="text-sm text-slate-600">
-            汇总状态：<strong>{option || '备料中'}</strong>
+            汇总状态：
+            <strong
+              className={
+                shortageKinds > 0
+                  ? 'text-red-700'
+                  : option === '料齐'
+                    ? 'text-emerald-700'
+                    : 'text-slate-800'
+              }
+            >
+              {option || '备料中'}
+            </strong>
           </span>
           <span
             className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${
@@ -142,7 +153,7 @@ export default function MaterialTable({
                 : 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200'
             }`}
           >
-            {shortageKinds > 0 ? `缺料 ${shortageKinds} 种` : '无缺料'}
+            {shortageKinds > 0 ? `缺料 ${shortageKinds} 种` : '物料已齐'}
           </span>
         </div>
         {note && <p className="text-xs text-slate-500">{note}</p>}
@@ -247,15 +258,17 @@ export default function MaterialTable({
             ))}
           </select>
         </div>
-        <div>
-          <label className="label-text">文字备注</label>
-          <input
-            className="input-field"
-            value={note}
-            readOnly={readOnly}
-            onChange={(e) => update({ note: e.target.value })}
-          />
-        </div>
+      </div>
+      <div className="mb-4">
+        <label className="label-text">文字备注</label>
+        <textarea
+          className="textarea-field"
+          rows={3}
+          value={note}
+          readOnly={readOnly}
+          onChange={(e) => update({ note: e.target.value })}
+          placeholder="可拖拽右下角拉高"
+        />
       </div>
 
       {!readOnly && (
@@ -366,12 +379,13 @@ export default function MaterialTable({
                     />
                   </td>
                   <td className="table-td min-w-[160px]">
-                    <input
-                      type="text"
-                      className="input-field"
+                    <textarea
+                      className="input-field textarea-compact w-full"
+                      rows={2}
                       value={it.note}
                       readOnly={readOnly}
                       onChange={(e) => updateItem(it.id, { note: e.target.value })}
+                      placeholder="备注"
                     />
                   </td>
                   <td className="table-td min-w-[96px]">

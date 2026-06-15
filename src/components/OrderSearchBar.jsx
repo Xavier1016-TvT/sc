@@ -25,7 +25,7 @@ export default function OrderSearchBar({
         <input
           type="search"
           className="input-field pl-9 pr-9"
-          placeholder="订单名称、厂家、子项目…"
+          placeholder="订单名称、厂家、子项目、物料编码/名称…"
           value={value}
           onChange={(e) => onChange(e.target.value)}
         />

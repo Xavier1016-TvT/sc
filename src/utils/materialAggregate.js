@@ -11,8 +11,6 @@ export function countShortageKinds(items = []) {
 }
 
 export function getItemShortage(item) {
-  const shortage = Number(item.shortage)
-  if (shortage > 0) return shortage
   const required = Number(item.required) || 0
   const received = Number(item.received) || 0
   return Math.max(0, required - received)
@@ -97,7 +95,7 @@ export function getMaterialSubtitle(material, { isSummary = false } = {}) {
   if (shortageKinds > 0) {
     parts.push(`缺料 ${shortageKinds} 种`)
   } else if (items.length) {
-    parts.push('无缺料')
+    parts.push('无短缺')
   }
   if (isSummary) parts.push('总览')
   return parts.join(' · ')
