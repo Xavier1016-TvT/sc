@@ -1,4 +1,5 @@
 import { createDefectRecord } from '../utils/defaults'
+import TableScrollBody from './TableScrollBody'
 
 export default function DefectStatsTable({ records, onChange }) {
   const update = (id, patch) => {
@@ -25,8 +26,7 @@ export default function DefectStatsTable({ records, onChange }) {
           + 添加行
         </button>
       </div>
-      <div className="table-scroll-x">
-        <table className="w-full min-w-[400px] table-sticky">
+      <TableScrollBody tableClassName="w-full min-w-[400px]">
           <thead>
             <tr>
               {['日期', '不良数', '累计', ''].map((h) => (
@@ -67,8 +67,7 @@ export default function DefectStatsTable({ records, onChange }) {
               </tr>
             ))}
           </tbody>
-        </table>
-      </div>
+      </TableScrollBody>
     </div>
   )
 }

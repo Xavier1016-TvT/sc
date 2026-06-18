@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { getSubProjectMetrics, formatDefectRate } from '../utils/calculations'
 import { isLargeOrder } from '../utils/orderWorkflow'
+import TableScrollBody from './TableScrollBody'
 
 export default function SubProjectSummaryTable({
   orderId,
@@ -21,8 +22,7 @@ export default function SubProjectSummaryTable({
 
   if (variant === 'closed') {
     return (
-      <div className="table-scroll-x">
-        <table className="w-full min-w-[640px] table-sticky">
+      <TableScrollBody tableClassName="w-full min-w-[640px]">
           <thead>
             <tr>
               <th className="table-th">子项目</th>
@@ -54,14 +54,12 @@ export default function SubProjectSummaryTable({
               )
             })}
           </tbody>
-        </table>
-      </div>
+      </TableScrollBody>
     )
   }
 
   return (
-    <div className="table-scroll-x">
-      <table className="w-full min-w-[1080px] table-sticky">
+    <TableScrollBody tableClassName="w-full min-w-[1080px]">
         <thead>
           <tr>
             <th className="table-th">名称</th>
@@ -129,7 +127,6 @@ export default function SubProjectSummaryTable({
             )
           })}
         </tbody>
-      </table>
-    </div>
+    </TableScrollBody>
   )
 }

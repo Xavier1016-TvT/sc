@@ -1,6 +1,7 @@
 import { createShippingRecord } from '../utils/defaults'
 import FileUpload from './FileUpload'
 import FilePreviewTrigger from './FilePreviewTrigger'
+import TableScrollBody from './TableScrollBody'
 import { getSubProjectShipped } from '../utils/calculations'
 
 export default function ShippingTable({ records, onChange, subProject, smallOrder = false }) {
@@ -24,8 +25,7 @@ export default function ShippingTable({ records, onChange, subProject, smallOrde
           + 添加行
         </button>
       </div>
-      <div className="table-scroll-x">
-        <table className="w-full min-w-[640px] table-sticky">
+      <TableScrollBody tableClassName="w-full min-w-[640px]">
           <thead>
             <tr>
               {['出货日期', '数量', '出货单', '备注', ''].map((h) => (
@@ -89,8 +89,7 @@ export default function ShippingTable({ records, onChange, subProject, smallOrde
               </tr>
             ))}
           </tbody>
-        </table>
-      </div>
+      </TableScrollBody>
     </div>
   )
 }

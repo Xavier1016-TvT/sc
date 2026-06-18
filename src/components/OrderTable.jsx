@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import StatusBadge from './StatusBadge'
 import OrderTypeBadge from './OrderTypeBadge'
+import TableScrollBody from './TableScrollBody'
 import { isLargeOrder } from '../utils/orderWorkflow'
 import { formatQty, getOrderUnit, formatOrderDocConfirmation, getOrderMaterialStatusText, hasOrderMaterialShortage, isOrderMaterialComplete } from '../utils/calculations'
 
@@ -20,7 +21,7 @@ export default function OrderTable({ orders, orderMetrics, onEdit, onDelete, mod
   if (mode === '未下单') {
     return (
       <TableShell title="未下单订单">
-        <thead className="bg-slate-50">
+        <thead>
           <tr>
             <th className="table-th">订单名称</th>
             <th className="table-th">类型</th>
@@ -56,7 +57,7 @@ export default function OrderTable({ orders, orderMetrics, onEdit, onDelete, mod
   if (mode === '已结单') {
     return (
       <TableShell title="已结单订单">
-        <thead className="bg-slate-50">
+        <thead>
           <tr>
             <th className="table-th">订单名称</th>
             <th className="table-th">类型</th>
@@ -95,7 +96,7 @@ export default function OrderTable({ orders, orderMetrics, onEdit, onDelete, mod
 
   return (
     <TableShell title={mode === '生产中' ? '生产中订单' : '订单一览'}>
-      <thead className="bg-slate-50">
+      <thead>
         <tr>
           <th className="table-th">订单</th>
           <th className="table-th">状态</th>
@@ -173,9 +174,7 @@ function TableShell({ title, children }) {
       <div className="px-5 py-4 border-b border-slate-100">
         <h3 className="text-base font-semibold text-slate-800">{title}</h3>
       </div>
-      <div className="table-scroll-x">
-        <table className="w-full table-sticky">{children}</table>
-      </div>
+      <TableScrollBody>{children}</TableScrollBody>
     </div>
   )
 }

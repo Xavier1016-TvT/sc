@@ -65,18 +65,23 @@ body {
   .material-table .input-field[type='number'] {
     @apply min-w-[72px] text-center tabular-nums;
   }
-  .table-scroll-x {
-    @apply overflow-x-auto;
-    overflow-y: visible;
+  .table-fixed-body {
+    --table-fixed-height: 500px;
+    @apply overflow-x-auto overflow-y-auto;
+    height: var(--table-fixed-height);
+    max-height: var(--table-fixed-height);
   }
-  .table-sticky thead {
-    @apply sticky z-20;
-    top: var(--app-header-height);
+  .table-fixed-body-modal {
+    --table-fixed-height: min(420px, 55vh);
   }
-  .table-sticky thead th {
-    @apply bg-slate-50 shadow-[0_1px_0_0_rgb(226_232_240)];
+  .table-fixed-body table {
+    @apply w-full border-collapse;
   }
-  .table-sticky.table-sticky-red thead th {
-    @apply bg-red-100/95 shadow-[0_1px_0_0_rgb(254_202_202)];
+  .table-fixed-body thead th {
+    @apply sticky z-10 bg-slate-100 shadow-[0_1px_0_0_rgb(226_232_240)];
+    top: 0;
+  }
+  .table-fixed-body-red thead th {
+    @apply bg-red-100 text-red-800 shadow-[0_1px_0_0_rgb(254_202_202)];
   }
 }

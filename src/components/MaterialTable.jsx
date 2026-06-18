@@ -4,6 +4,7 @@ import { createMaterialItem } from '../utils/defaults'
 import { MATERIAL_OPTIONS, MATERIAL_TYPES } from '../utils/constants'
 import FilePreviewTrigger from './FilePreviewTrigger'
 import CollapsibleSection from './CollapsibleSection'
+import TableScrollBody from './TableScrollBody'
 import { parseMaterialFileToItems } from '../utils/parseMaterialImport'
 import { readFileAsDataUrl, readFileLocally } from '../utils/fileHelpers'
 import {
@@ -34,8 +35,7 @@ function MaterialItemsReadOnlyTable({ items = [] }) {
   }
 
   return (
-    <div className="table-scroll-x -mx-1 px-1">
-      <table className="material-table table-sticky">
+    <TableScrollBody className="-mx-1 px-1" tableClassName="material-table">
         <thead>
           <tr>
             {READONLY_HEADERS.map((h) => (
@@ -64,15 +64,17 @@ function MaterialItemsReadOnlyTable({ items = [] }) {
             )
           })}
         </tbody>
-      </table>
-    </div>
+    </TableScrollBody>
   )
 }
 
 function ShortageItemsTable({ items }) {
   return (
-    <div className="table-scroll-x -mx-1 px-1">
-      <table className="material-table table-sticky table-sticky-red min-w-[960px]">
+    <TableScrollBody
+      className="-mx-1 px-1"
+      tableClassName="material-table min-w-[960px]"
+      variant="red"
+    >
         <thead>
           <tr>
             {SHORTAGE_HEADERS.map((h) => (
@@ -92,8 +94,7 @@ function ShortageItemsTable({ items }) {
             </tr>
           ))}
         </tbody>
-      </table>
-    </div>
+    </TableScrollBody>
   )
 }
 
@@ -407,8 +408,7 @@ export default function MaterialTable({
           </button>
         )}
       </div>
-      <div className="table-scroll-x -mx-1 px-1 mt-2">
-        <table className="material-table table-sticky">
+      <TableScrollBody className="-mx-1 px-1 mt-2" tableClassName="material-table">
           <thead>
             <tr>
               {EDIT_TEXT_COLS.map(({ field, label, minW }) => (
@@ -507,8 +507,7 @@ export default function MaterialTable({
               )
             })}
           </tbody>
-        </table>
-      </div>
+      </TableScrollBody>
     </div>
   )
 }

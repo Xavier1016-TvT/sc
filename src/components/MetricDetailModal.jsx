@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import TableScrollBody from './TableScrollBody'
 
 export default function MetricDetailModal({
   open,
@@ -43,12 +44,12 @@ export default function MetricDetailModal({
           )}
         </div>
 
-        <div className="overflow-auto flex-1 px-6 py-4">
+        <div className="flex-1 px-6 py-4">
           {!rows?.length ? (
             <p className="text-center text-slate-400 py-8 text-sm">暂无明细数据</p>
           ) : (
-            <table className="w-full min-w-[480px]">
-              <thead className="bg-slate-50 sticky top-0">
+            <TableScrollBody tableClassName="w-full min-w-[480px]" variant="modal">
+              <thead>
                 <tr>
                   {columns.map((col) => (
                     <th key={col.key} className="table-th">{col.label}</th>
@@ -78,7 +79,7 @@ export default function MetricDetailModal({
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </TableScrollBody>
           )}
         </div>
 

@@ -11,28 +11,40 @@ import {
 import { resolveFileUrl } from '../utils/cloudFiles'
 import { useFileUrl } from '../hooks/useFileUrl'
 import { loadSpreadsheetRows } from '../utils/spreadsheetPreview'
+import TableScrollBody from './TableScrollBody'
 
 function TableRowsPreview({ rows }) {
   if (!rows.length) {
     return <p className="text-sm text-slate-500">表格为空或无法解析</p>
   }
 
+  const headerRow = rows[0]
+  const bodyRows = rows.slice(1)
+  const headerCells = Array.isArray(headerRow) ? headerRow : [headerRow]
+
   return (
-    <div className="overflow-auto max-h-[70vh] border border-slate-200 rounded-lg bg-white">
-      <table className="w-full text-sm">
-        <tbody>
-          {rows.map((row, i) => (
-            <tr key={i} className={i === 0 ? 'bg-slate-100 font-medium' : 'border-t border-slate-100'}>
-              {(Array.isArray(row) ? row : [row]).map((cell, j) => (
-                <td key={j} className="px-3 py-2 whitespace-nowrap text-slate-700">
-                  {String(cell ?? '')}
-                </td>
-              ))}
-            </tr>
+    <TableScrollBody tableClassName="w-full text-sm border border-slate-200 rounded-lg bg-white" variant="modal">
+      <thead>
+        <tr>
+          {headerCells.map((cell, j) => (
+            <th key={j} className="table-th whitespace-nowrap normal-case tracking-normal">
+              {String(cell ?? '')}
+            </th>
           ))}
-        </tbody>
-      </table>
-    </div>
+        </tr>
+      </thead>
+      <tbody>
+        {bodyRows.map((row, i) => (
+          <tr key={i} className="border-t border-slate-100">
+            {(Array.isArray(row) ? row : [row]).map((cell, j) => (
+              <td key={j} className="table-td whitespace-nowrap">
+                {String(cell ?? '')}
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </TableScrollBody>
   )
 }
 

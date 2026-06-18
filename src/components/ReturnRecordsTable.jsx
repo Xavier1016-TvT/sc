@@ -1,6 +1,7 @@
 import { createReturnRecord } from '../utils/defaults'
 import FileUpload from './FileUpload'
 import FilePreviewTrigger from './FilePreviewTrigger'
+import TableScrollBody from './TableScrollBody'
 import { getSubProjectReturned } from '../utils/calculations'
 
 export default function ReturnRecordsTable({ records, onChange, subProject }) {
@@ -24,8 +25,7 @@ export default function ReturnRecordsTable({ records, onChange, subProject }) {
           + 添加贴回记录
         </button>
       </div>
-      <div className="table-scroll-x">
-        <table className="w-full min-w-[720px] table-sticky">
+      <TableScrollBody tableClassName="w-full min-w-[720px]">
           <thead>
             <tr>
               {['贴回日期', '数量', '照片', '备注', ''].map((h) => (
@@ -96,8 +96,7 @@ export default function ReturnRecordsTable({ records, onChange, subProject }) {
               </tr>
             )}
           </tbody>
-        </table>
-      </div>
+      </TableScrollBody>
     </div>
   )
 }
