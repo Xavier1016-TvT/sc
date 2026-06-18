@@ -13,7 +13,6 @@ import OrderMaterialSection from '../components/OrderMaterialSection'
 import SubProjectSummaryTable from '../components/SubProjectSummaryTable'
 import ReturnRecordsTable from '../components/ReturnRecordsTable'
 import OrderTypeBadge from '../components/OrderTypeBadge'
-import OrderWorkflowBanner from '../components/OrderWorkflowBanner'
 import { ORDER_STATUSES, ORDER_TYPES, ORDER_UNITS } from '../utils/constants'
 import { isReturnRequired, isLargeOrder } from '../utils/orderWorkflow'
 import { defaultSampleInfo, defaultMaterialPrep } from '../utils/orderSync'
@@ -83,7 +82,6 @@ export default function OrderDetail() {
           onAdvance={() => changeStatus('生产中')}
           nextLabel="进入生产 →"
         />
-        <OrderWorkflowBanner order={order} />
 
         <div className="card">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -140,6 +138,8 @@ export default function OrderDetail() {
           materialPrep={materialPrep}
           onChange={patchMaterialPrep}
           hasSubProjects={hasSubProjects}
+          subProjects={order.subProjects}
+          orderId={orderId}
         />
       </div>
     )
@@ -153,7 +153,6 @@ export default function OrderDetail() {
           onBack={goBackStatus}
           backLabel="← 退回生产中"
         />
-        <OrderWorkflowBanner order={order} />
 
         <div className="card">
           <div className={`grid grid-cols-1 sm:grid-cols-2 gap-6 ${isReturnRequired(order) ? 'lg:grid-cols-5' : 'lg:grid-cols-4'}`}>
@@ -176,9 +175,6 @@ export default function OrderDetail() {
             {isReturnRequired(order) && (
               <div className="card">
                 <h3 className="text-base font-semibold text-slate-800 mb-4">贴回登记</h3>
-                <p className="text-sm text-slate-500 mb-4">
-                  小订单：产品回到公司后，请登记贴回日期、数量、照片与备注。
-                </p>
                 <div className="space-y-6">
                   {order.subProjects.map((sub) => (
                     <div key={sub.id} className="border border-slate-100 rounded-xl p-4">
@@ -238,7 +234,6 @@ export default function OrderDetail() {
         onAdvance={() => changeStatus('已结单')}
         nextLabel="结单 →"
       />
-      <OrderWorkflowBanner order={order} />
 
       <div className="card">
         <div className="flex flex-wrap items-start justify-between gap-4">

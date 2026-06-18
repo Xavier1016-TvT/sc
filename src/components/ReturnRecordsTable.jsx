@@ -24,9 +24,9 @@ export default function ReturnRecordsTable({ records, onChange, subProject }) {
           + 添加贴回记录
         </button>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[720px]">
-          <thead className="bg-slate-50">
+      <div className="table-scroll-x">
+        <table className="w-full min-w-[720px] table-sticky">
+          <thead>
             <tr>
               {['贴回日期', '数量', '照片', '备注', ''].map((h) => (
                 <th key={h || 'action'} className="table-th">{h}</th>

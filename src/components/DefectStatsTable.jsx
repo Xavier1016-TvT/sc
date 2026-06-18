@@ -25,9 +25,9 @@ export default function DefectStatsTable({ records, onChange }) {
           + 添加行
         </button>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[400px]">
-          <thead className="bg-slate-50">
+      <div className="table-scroll-x">
+        <table className="w-full min-w-[400px] table-sticky">
+          <thead>
             <tr>
               {['日期', '不良数', '累计', ''].map((h) => (
                 <th key={h} className="table-th">{h}</th>

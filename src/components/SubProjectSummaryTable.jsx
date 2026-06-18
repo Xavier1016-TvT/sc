@@ -21,9 +21,9 @@ export default function SubProjectSummaryTable({
 
   if (variant === 'closed') {
     return (
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[640px]">
-          <thead className="bg-slate-50">
+      <div className="table-scroll-x">
+        <table className="w-full min-w-[640px] table-sticky">
+          <thead>
             <tr>
               <th className="table-th">子项目</th>
               <th className="table-th">已出货</th>
@@ -60,9 +60,9 @@ export default function SubProjectSummaryTable({
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[1080px]">
-        <thead className="bg-slate-50">
+    <div className="table-scroll-x">
+      <table className="w-full min-w-[1080px] table-sticky">
+        <thead>
           <tr>
             <th className="table-th">名称</th>
             <th className="table-th">资料确认</th>

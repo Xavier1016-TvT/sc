@@ -173,8 +173,8 @@ function TableShell({ title, children }) {
       <div className="px-5 py-4 border-b border-slate-100">
         <h3 className="text-base font-semibold text-slate-800">{title}</h3>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full">{children}</table>
+      <div className="table-scroll-x">
+        <table className="w-full table-sticky">{children}</table>
       </div>
     </div>
   )

@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --app-header-height: 4.5rem;
+}
+
 body {
   @apply bg-slate-50 text-slate-800 antialiased;
 }
@@ -60,5 +64,19 @@ body {
   }
   .material-table .input-field[type='number'] {
     @apply min-w-[72px] text-center tabular-nums;
+  }
+  .table-scroll-x {
+    @apply overflow-x-auto;
+    overflow-y: visible;
+  }
+  .table-sticky thead {
+    @apply sticky z-20;
+    top: var(--app-header-height);
+  }
+  .table-sticky thead th {
+    @apply bg-slate-50 shadow-[0_1px_0_0_rgb(226_232_240)];
+  }
+  .table-sticky.table-sticky-red thead th {
+    @apply bg-red-100/95 shadow-[0_1px_0_0_rgb(254_202_202)];
   }
 }

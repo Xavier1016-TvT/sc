@@ -14,9 +14,6 @@ export default function ShippingTable({ records, onChange, subProject, smallOrde
     <div className="space-y-4">
       <p className="text-sm text-slate-500">
         记录贴片厂出货信息。已出货 <span className="font-medium text-slate-700">{shipped}</span> 个
-        {smallOrder && (
-          <span className="text-slate-400"> · 小订单贴回请在结单后登记</span>
-        )}
       </p>
       <div className="flex justify-end">
         <button
@@ -27,9 +24,9 @@ export default function ShippingTable({ records, onChange, subProject, smallOrde
           + 添加行
         </button>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[640px]">
-          <thead className="bg-slate-50">
+      <div className="table-scroll-x">
+        <table className="w-full min-w-[640px] table-sticky">
+          <thead>
             <tr>
               {['出货日期', '数量', '出货单', '备注', ''].map((h) => (
                 <th key={h || 'action'} className="table-th">{h}</th>

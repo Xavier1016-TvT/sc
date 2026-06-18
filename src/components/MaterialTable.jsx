@@ -3,6 +3,7 @@ import { useRef } from 'react'
 import { createMaterialItem } from '../utils/defaults'
 import { MATERIAL_OPTIONS, MATERIAL_TYPES } from '../utils/constants'
 import FilePreviewTrigger from './FilePreviewTrigger'
+import CollapsibleSection from './CollapsibleSection'
 import { parseMaterialFileToItems } from '../utils/parseMaterialImport'
 import { readFileAsDataUrl, readFileLocally } from '../utils/fileHelpers'
 import {
@@ -25,29 +26,74 @@ const EDIT_NUM_COLS = [
 
 const SHORTAGE_HEADERS = ['编码', '物料名称', '规格', '缺料数', '物料类型', '备注']
 
+const READONLY_HEADERS = ['编码', '物料名称', '规格', '需求量', '实到数', '缺料数', '物料状态', '备注', '物料类型']
+
+function MaterialItemsReadOnlyTable({ items = [] }) {
+  if (!items.length) {
+    return <p className="text-sm text-slate-400 py-3">暂无物料明细</p>
+  }
+
+  return (
+    <div className="table-scroll-x -mx-1 px-1">
+      <table className="material-table table-sticky">
+        <thead>
+          <tr>
+            {READONLY_HEADERS.map((h) => (
+              <th key={h} className="table-th">{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-slate-100">
+          {items.map((it) => {
+            const shortage = getItemShortage(it)
+            const isShort = shortage > 0
+            return (
+              <tr key={it.id} className={isShort ? 'bg-red-50/70' : undefined}>
+                <td className="table-td font-medium whitespace-nowrap">{it.code || '—'}</td>
+                <td className="table-td">{it.name || '—'}</td>
+                <td className="table-td">{it.spec || '—'}</td>
+                <td className="table-td text-center tabular-nums">{it.required ?? '—'}</td>
+                <td className="table-td text-center tabular-nums">{it.received ?? '—'}</td>
+                <td className={`table-td text-center font-semibold tabular-nums ${isShort ? 'text-red-700' : 'text-slate-400'}`}>
+                  {isShort ? shortage : '—'}
+                </td>
+                <td className="table-td">{it.status || '—'}</td>
+                <td className="table-td">{it.note || '—'}</td>
+                <td className="table-td whitespace-nowrap">{it.type || '—'}</td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
 function ShortageItemsTable({ items }) {
   return (
-    <table className="material-table min-w-[960px]">
-      <thead className="bg-red-100/60">
-        <tr>
-          {SHORTAGE_HEADERS.map((h) => (
-            <th key={h} className="table-th text-red-800">{h}</th>
-          ))}
-        </tr>
-      </thead>
-      <tbody className="divide-y divide-red-100">
-        {items.map((it) => (
-          <tr key={it.id}>
-            <td className="table-td font-medium text-red-900 whitespace-nowrap">{it.code || '—'}</td>
-            <td className="table-td text-red-900">{it.name || '—'}</td>
-            <td className="table-td text-red-800">{it.spec || '—'}</td>
-            <td className="table-td font-semibold text-red-700 tabular-nums">{getItemShortage(it)}</td>
-            <td className="table-td whitespace-nowrap">{it.type || '—'}</td>
-            <td className="table-td text-red-800">{it.note || '—'}</td>
+    <div className="table-scroll-x -mx-1 px-1">
+      <table className="material-table table-sticky table-sticky-red min-w-[960px]">
+        <thead>
+          <tr>
+            {SHORTAGE_HEADERS.map((h) => (
+              <th key={h} className="table-th text-red-800">{h}</th>
+            ))}
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody className="divide-y divide-red-100">
+          {items.map((it) => (
+            <tr key={it.id}>
+              <td className="table-td font-medium text-red-900 whitespace-nowrap">{it.code || '—'}</td>
+              <td className="table-td text-red-900">{it.name || '—'}</td>
+              <td className="table-td text-red-800">{it.spec || '—'}</td>
+              <td className="table-td font-semibold text-red-700 tabular-nums">{getItemShortage(it)}</td>
+              <td className="table-td whitespace-nowrap">{it.type || '—'}</td>
+              <td className="table-td text-red-800">{it.note || '—'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   )
 }
 
@@ -180,56 +226,102 @@ export default function MaterialTable({
         )}
 
         {shortageKinds > 0 ? (
-          showPerSub ? (
-            <div className="space-y-4">
-              {subShortages.map((s) => (
-                <div
-                  key={s.subId}
-                  className="overflow-x-auto -mx-1 px-1 border border-red-100 rounded-lg bg-red-50/40 p-3"
-                >
-                  <div className="text-sm font-semibold text-red-800 mb-2">
+          <div>
+            <h4 className="text-sm font-semibold text-red-800 mb-3">缺料明细</h4>
+            {showPerSub ? (
+              <div className="space-y-4">
+                {subShortages.map((s) => (
+                  <div
+                    key={s.subId}
+                    className="border border-red-100 rounded-lg bg-red-50/40 p-3"
+                  >
+                    <div className="text-sm font-semibold text-red-800 mb-2">
+                      {orderId ? (
+                        <Link to={`/order/${orderId}/sub/${s.subId}`} className="hover:underline">
+                          {s.subName}
+                        </Link>
+                      ) : (
+                        s.subName
+                      )}
+                      <span className="text-red-600 font-normal"> · 缺料 {s.shortageKinds} 种</span>
+                    </div>
+                    <ShortageItemsTable items={s.items} />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="border border-red-100 rounded-lg bg-red-50/40 p-3">
+                {subProjects.length === 1 && subShortages.length === 1 && (
+                  <p className="text-sm font-medium text-red-800 mb-2">
+                    子项目：
                     {orderId ? (
-                      <Link to={`/order/${orderId}/sub/${s.subId}`} className="hover:underline">
-                        {s.subName}
+                      <Link
+                        to={`/order/${orderId}/sub/${subShortages[0].subId}`}
+                        className="hover:underline ml-1"
+                      >
+                        {subShortages[0].subName}
                       </Link>
                     ) : (
-                      s.subName
+                      subShortages[0].subName
                     )}
-                    <span className="text-red-600 font-normal"> · 缺料 {s.shortageKinds} 种</span>
-                  </div>
-                  <ShortageItemsTable items={s.items} />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="overflow-x-auto -mx-1 px-1 border border-red-100 rounded-lg bg-red-50/40">
-              {subProjects.length === 1 && subShortages.length === 1 && (
-                <p className="text-sm font-medium text-red-800 px-3 pt-3">
-                  子项目：
-                  {orderId ? (
-                    <Link
-                      to={`/order/${orderId}/sub/${subShortages[0].subId}`}
-                      className="hover:underline ml-1"
-                    >
-                      {subShortages[0].subName}
-                    </Link>
-                  ) : (
-                    subShortages[0].subName
-                  )}
-                </p>
-              )}
-              <ShortageItemsTable items={shortageItems} />
-            </div>
-          )
+                  </p>
+                )}
+                <ShortageItemsTable items={shortageItems} />
+              </div>
+            )}
+          </div>
         ) : (
           <p className="text-sm text-emerald-700 bg-emerald-50 rounded-lg px-4 py-3">
             各子项目物料已齐，当前无缺料项
           </p>
         )}
 
-        <p className="text-xs text-slate-400">
-          总览由各子项目物料自动汇总，请在子项目详情中维护具体物料
-        </p>
+        {subProjects.length > 0 && (
+          <div className="space-y-3 pt-2">
+            <h4 className="text-sm font-semibold text-slate-800">各子项目物料</h4>
+            {subProjects.map((sub) => {
+              const subItems = sub.materialStatus?.items || []
+              const subShortageKinds = countShortageKinds(subItems)
+              const subOption = sub.materialStatus?.option || '备料中'
+              const subtitle = [
+                subOption,
+                subItems.length ? `${subItems.length} 条` : '暂无明细',
+                subShortageKinds > 0 ? `缺料 ${subShortageKinds} 种` : null,
+              ]
+                .filter(Boolean)
+                .join(' · ')
+
+              return (
+                <CollapsibleSection
+                  key={sub.id}
+                  title={
+                    orderId ? (
+                      <Link
+                        to={`/order/${orderId}/sub/${sub.id}`}
+                        className="hover:text-primary-600 hover:underline"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {sub.name || '未命名子项目'}
+                      </Link>
+                    ) : (
+                      sub.name || '未命名子项目'
+                    )
+                  }
+                  subtitle={subtitle}
+                  badge={
+                    subShortageKinds > 0 ? (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700">
+                        缺 {subShortageKinds}
+                      </span>
+                    ) : null
+                  }
+                >
+                  <MaterialItemsReadOnlyTable items={subItems} />
+                </CollapsibleSection>
+              )
+            })}
+          </div>
+        )}
       </div>
     )
   }
@@ -315,9 +407,9 @@ export default function MaterialTable({
           </button>
         )}
       </div>
-      <div className="overflow-x-auto -mx-1 px-1 mt-2">
-        <table className="material-table">
-          <thead className="bg-slate-50">
+      <div className="table-scroll-x -mx-1 px-1 mt-2">
+        <table className="material-table table-sticky">
+          <thead>
             <tr>
               {EDIT_TEXT_COLS.map(({ field, label, minW }) => (
                 <th key={field} className={`table-th ${minW}`}>{label}</th>

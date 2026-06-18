@@ -27,9 +27,9 @@ export default function ProcessRecordsTable({ records, onChange }) {
           + 添加行
         </button>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[620px]">
-          <thead className="bg-slate-50">
+      <div className="table-scroll-x">
+        <table className="w-full min-w-[620px] table-sticky">
+          <thead>
             <tr>
               {['日期', '贴片', '贴片累计', '测试', '测试累计', ''].map((h) => (
                 <th key={h} className="table-th">{h}</th>

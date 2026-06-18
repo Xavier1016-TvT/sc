@@ -73,26 +73,10 @@ export default function Dashboard() {
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-2 text-xs text-slate-400 ml-1">
-          <span>未下单</span><span>→</span>
-          <span>生产中</span><span>→</span>
-          <span>已结单</span>
-        </div>
         <button type="button" className="btn-primary ml-auto shrink-0" onClick={() => { setEditingOrder(null); setModalOpen(true) }}>
           + 新增订单
         </button>
       </div>
-
-      {statusTab === '未下单' && (
-        <div className="card bg-blue-50 border-blue-100 text-sm text-blue-800">
-          未下单阶段：填写贴样情况与物料状态，确认后可流转至「生产中」。
-        </div>
-      )}
-      {statusTab === '已结单' && (
-        <div className="card bg-emerald-50 border-emerald-100 text-sm text-emerald-800">
-          已结单阶段：小订单登记贴回信息。
-        </div>
-      )}
 
       <MetricsSection
         searchQuery={searchQuery}
