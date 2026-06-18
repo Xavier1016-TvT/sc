@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useData } from '../context/DataContext'
 import {
@@ -9,6 +10,7 @@ import {
 } from '../utils/calculations'
 import CollapsibleSection from '../components/CollapsibleSection'
 import DocConfirmationSection from '../components/DocConfirmationSection'
+import ChipFirmwareSection from '../components/ChipFirmwareSection'
 import MaterialTable from '../components/MaterialTable'
 import ProcessRecordsTable from '../components/ProcessRecordsTable'
 import ProblemNotesTable from '../components/ProblemNotesTable'
@@ -24,6 +26,7 @@ export default function SubProjectDetail() {
   const { getOrder, getSubProject, updateSubProject } = useData()
   const order = getOrder(orderId)
   const sub = getSubProject(orderId, subId)
+  const [openSection, setOpenSection] = useState(null)
 
   if (!order || !sub) {
     return (
@@ -37,7 +40,19 @@ export default function SubProjectDetail() {
   const patch = (data) => updateSubProject(orderId, subId, data)
   const samplePassed = order.sampleInfo?.result === '通过'
   const materialStatus = sub.materialStatus || { option: '备料中', note: '', file: null, items: [] }
+  const chipFirmware = sub.chipFirmware || { name: '', spec: '', file: null }
   const defectRecords = sub.defectRecords || []
+
+  const toggleSection = (id) => {
+    setOpenSection((prev) => (prev === id ? null : id))
+  }
+
+  const sectionProps = (id) => ({
+    open: openSection === id,
+    onOpenChange: () => toggleSection(id),
+  })
+
+  const chipSubtitle = [chipFirmware.name, chipFirmware.spec].filter(Boolean).join(' · ') || '未填写'
 
   return (
     <div className="space-y-4">
@@ -61,7 +76,7 @@ export default function SubProjectDetail() {
       <CollapsibleSection
         title="基本信息"
         subtitle={`${sub.name} · ${sub.quantity ?? '数量未填'}`}
-        defaultOpen
+        {...sectionProps('basic')}
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
           <div>
@@ -87,10 +102,17 @@ export default function SubProjectDetail() {
         </p>
       </CollapsibleSection>
 
+      <CollapsibleSection title="芯片固件" subtitle={chipSubtitle} {...sectionProps('chip')}>
+        <ChipFirmwareSection
+          chipFirmware={chipFirmware}
+          onChange={(chipFirmware) => patch({ chipFirmware })}
+        />
+      </CollapsibleSection>
+
       <CollapsibleSection
         title="物料状态"
         subtitle={getMaterialSubtitle(materialStatus)}
-        defaultOpen
+        {...sectionProps('material')}
       >
         <div className="pt-4">
           <MaterialTable
@@ -103,6 +125,7 @@ export default function SubProjectDetail() {
       <CollapsibleSection
         title="资料确认"
         subtitle={`${sub.docConfirmations?.filter((d) => d.status === '已确认').length || 0}/${sub.docConfirmations?.length || 0} 已确认`}
+        {...sectionProps('doc')}
       >
         <div className="pt-4">
           <DocConfirmationSection
@@ -129,6 +152,7 @@ export default function SubProjectDetail() {
             <CollapsibleSection
               title="生产工序记录"
               subtitle={`贴片 ${getSubProjectCumulative(sub)} · 测试 ${getSubProjectTestCumulative(sub)}（工厂测试）`}
+              {...sectionProps('process')}
             >
               <div className="pt-4">
                 <ProcessRecordsTable
@@ -139,7 +163,11 @@ export default function SubProjectDetail() {
             </CollapsibleSection>
           )}
 
-          <CollapsibleSection title="问题备注" subtitle={`${sub.problemNotes?.length || 0} 条`}>
+          <CollapsibleSection
+            title="问题备注"
+            subtitle={`${sub.problemNotes?.length || 0} 条`}
+            {...sectionProps('problem')}
+          >
             <div className="pt-4">
               <ProblemNotesTable
                 notes={sub.problemNotes}
@@ -151,6 +179,7 @@ export default function SubProjectDetail() {
           <CollapsibleSection
             title="出货情况"
             subtitle={`已出货 ${getSubProjectShipped(sub)} 个`}
+            {...sectionProps('shipping')}
           >
             <div className="pt-4">
               <ShippingTable
@@ -165,6 +194,7 @@ export default function SubProjectDetail() {
           <CollapsibleSection
             title="出货不良统计"
             subtitle={`合计 ${getSubProjectDefects(sub)} 个`}
+            {...sectionProps('defect')}
           >
             <div className="pt-4">
               <DefectStatsTable

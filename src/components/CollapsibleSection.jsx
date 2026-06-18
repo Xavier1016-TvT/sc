@@ -4,17 +4,29 @@ export default function CollapsibleSection({
   title,
   subtitle,
   defaultOpen = false,
+  open: controlledOpen,
+  onOpenChange,
   children,
   badge,
 }) {
-  const [open, setOpen] = useState(defaultOpen)
+  const [internalOpen, setInternalOpen] = useState(defaultOpen)
+  const isControlled = controlledOpen !== undefined
+  const open = isControlled ? controlledOpen : internalOpen
+
+  const toggle = () => {
+    if (isControlled) {
+      onOpenChange?.(!open)
+    } else {
+      setInternalOpen((v) => !v)
+    }
+  }
 
   return (
     <div className="card p-0 overflow-hidden">
       <button
         type="button"
         className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left hover:bg-slate-50 transition-colors"
-        onClick={() => setOpen(!open)}
+        onClick={toggle}
       >
         <div className="min-w-0">
           <div className="flex items-center gap-2">

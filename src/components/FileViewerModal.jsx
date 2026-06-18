@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useEffect, useState } from 'react'
 import {
   isImageFile,
   isPdfFile,
@@ -10,29 +10,22 @@ import {
 } from '../utils/fileHelpers'
 import { resolveFileUrl } from '../utils/cloudFiles'
 import { useFileUrl } from '../hooks/useFileUrl'
+import { loadSpreadsheetRows } from '../utils/spreadsheetPreview'
 
-function CsvPreview({ text }) {
-  const rows = useMemo(() => {
-    try {
-      return parseCsv(text)
-    } catch {
-      return []
-    }
-  }, [text])
-
+function TableRowsPreview({ rows }) {
   if (!rows.length) {
-    return <p className="text-sm text-slate-500">无法预览 CSV 内容</p>
+    return <p className="text-sm text-slate-500">表格为空或无法解析</p>
   }
 
   return (
-    <div className="overflow-auto max-h-[65vh] border border-slate-200 rounded-lg bg-white">
+    <div className="overflow-auto max-h-[70vh] border border-slate-200 rounded-lg bg-white">
       <table className="w-full text-sm">
         <tbody>
           {rows.map((row, i) => (
             <tr key={i} className={i === 0 ? 'bg-slate-100 font-medium' : 'border-t border-slate-100'}>
-              {row.map((cell, j) => (
+              {(Array.isArray(row) ? row : [row]).map((cell, j) => (
                 <td key={j} className="px-3 py-2 whitespace-nowrap text-slate-700">
-                  {cell}
+                  {String(cell ?? '')}
                 </td>
               ))}
             </tr>
@@ -43,9 +36,47 @@ function CsvPreview({ text }) {
   )
 }
 
-function BinaryFilePreview({ file, url }) {
-  const isSheet = isSpreadsheetFile(file)
+function CsvPreview({ text }) {
+  const rows = useMemo(() => {
+    try {
+      return parseCsv(text)
+    } catch {
+      return []
+    }
+  }, [text])
+  return <TableRowsPreview rows={rows} />
+}
 
+function SpreadsheetPreview({ file, url }) {
+  const [rows, setRows] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    let cancelled = false
+    setLoading(true)
+    setError('')
+    loadSpreadsheetRows(file, url)
+      .then((data) => {
+        if (!cancelled) setRows(data)
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message || '表格加载失败')
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [file, url])
+
+  if (loading) return <p className="text-center text-slate-500 py-12">表格加载中…</p>
+  if (error) return <p className="text-center text-red-600 py-12">{error}</p>
+  return <TableRowsPreview rows={rows} />
+}
+
+function BinaryFilePreview({ file, url }) {
   const openUrl = async () => {
     const href = url || (await resolveFileUrl(file))
     window.open(href, '_blank', 'noopener,noreferrer')
@@ -63,11 +94,7 @@ function BinaryFilePreview({ file, url }) {
     <div className="text-center py-10 px-4 bg-white rounded-lg">
       <div className="text-5xl mb-4">{getFileIcon(file)}</div>
       <p className="font-medium text-slate-800 mb-1">{file.name}</p>
-      <p className="text-sm text-slate-500 mb-6">
-        {isSheet
-          ? '表格文件请下载后用 Excel / WPS 打开，或在新窗口中尝试打开'
-          : '该文件类型暂不支持在线预览，可下载或在新窗口打开'}
-      </p>
+      <p className="text-sm text-slate-500 mb-6">该文件类型暂不支持在线预览，可下载或在新窗口打开</p>
       <div className="flex flex-wrap justify-center gap-3">
         <button type="button" className="btn-primary" onClick={download}>
           下载文件
@@ -88,6 +115,7 @@ export default function FileViewerModal({ file, onClose }) {
   const image = isImageFile(file)
   const pdf = isPdfFile(file)
   const csv = isCsvFile(file)
+  const sheet = isSpreadsheetFile(file)
   const csvText = csv && file.dataUrl ? dataUrlToText(file.dataUrl) : ''
 
   const handleDownload = async () => {
@@ -102,6 +130,9 @@ export default function FileViewerModal({ file, onClose }) {
     const href = url || (await resolveFileUrl(file))
     window.open(href, '_blank', 'noopener,noreferrer')
   }
+
+  const showBinaryFallback =
+    !loading && !error && !image && !pdf && !(csv && csvText) && !sheet
 
   return (
     <div
@@ -158,9 +189,8 @@ export default function FileViewerModal({ file, onClose }) {
             />
           )}
           {!loading && !error && csv && csvText && <CsvPreview text={csvText} />}
-          {!loading && !error && !image && !pdf && !(csv && csvText) && (
-            <BinaryFilePreview file={file} url={url} />
-          )}
+          {!loading && !error && sheet && <SpreadsheetPreview file={file} url={url} />}
+          {showBinaryFallback && <BinaryFilePreview file={file} url={url} />}
         </div>
       </div>
     </div>

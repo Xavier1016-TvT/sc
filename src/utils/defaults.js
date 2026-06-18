@@ -14,6 +14,14 @@ export function createDocConfirmation(name) {
   }
 }
 
+export function createChipFirmware() {
+  return {
+    name: '',
+    spec: '',
+    file: null,
+  }
+}
+
 export function createMaterialItem() {
   return {
     id: generateId('mat'),
@@ -36,6 +44,7 @@ export function createSubProject(name = '新子项目') {
     quantity: null,
     sampleStatus: '进行中',
     docConfirmations: [],
+    chipFirmware: createChipFirmware(),
     materialStatus: {
       option: '备料中',
       note: '',

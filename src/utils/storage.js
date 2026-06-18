@@ -5,6 +5,7 @@ import {
   createSubProject,
   createDocConfirmation,
   createReturnRecord,
+  createChipFirmware,
 } from './defaults'
 import { defaultMaterialPrep } from './orderSync'
 import { getDatabase } from './cloudbase'
@@ -50,6 +51,7 @@ function normalizeSubProject(sp) {
     ).map(normalizeDocConfirmation),
     shippingRecords,
     returnRecords: (sp.returnRecords || []).map(normalizeReturnRecord),
+    chipFirmware: { ...createChipFirmware(), ...(sp.chipFirmware || {}) },
   }
 }
 

@@ -5,8 +5,6 @@ import { buildMetricDetail } from '../utils/metricDetails'
 import { ORDER_STATUSES } from '../utils/constants'
 import MetricCard from '../components/MetricCard'
 import MetricDetailModal from '../components/MetricDetailModal'
-import OrderChart from '../components/OrderChart'
-import SampleStatusChart from '../components/SampleStatusChart'
 import OrderTable from '../components/OrderTable'
 import OrderModal from '../components/OrderModal'
 import MetricsSection from '../components/MetricsSection'
@@ -32,13 +30,6 @@ export default function Dashboard() {
 
   const summary = useMemo(() => getGlobalSummary(filteredOrders), [filteredOrders])
   const isProductionView = statusTab === '全部' || statusTab === '生产中'
-
-  const chartData = summary.orderMetrics.map((m) => ({
-    name: m.order.name.length > 8 ? m.order.name.slice(0, 8) + '…' : m.order.name,
-    订单数量: m.order.quantity,
-    已出货: m.cumulativeShipping,
-    已贴回: m.order.orderType === '大订单' ? null : m.cumulativeReturned,
-  }))
 
   const metricDetail = activeMetric
     ? buildMetricDetail(activeMetric, summary)
@@ -159,11 +150,6 @@ export default function Dashboard() {
                 color="slate"
                 onClick={() => setActiveMetric('remaining')}
               />
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <OrderChart data={chartData} />
-              <SampleStatusChart counts={summary.sampleCounts} />
             </div>
           </>
         ) : (

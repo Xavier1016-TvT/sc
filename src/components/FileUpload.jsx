@@ -48,6 +48,13 @@ export default function FileUpload({
           <>
             <button
               type="button"
+              className="btn-primary text-xs"
+              onClick={() => setViewOpen(true)}
+            >
+              打开查看
+            </button>
+            <button
+              type="button"
               className="inline-flex items-center gap-1 text-xs text-primary-600 hover:underline truncate max-w-[220px]"
               onClick={() => setViewOpen(true)}
               title="点击查看"

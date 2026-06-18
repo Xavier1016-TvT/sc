@@ -31,7 +31,7 @@ function normalizeHeader(value) {
   return normalizeCell(value).replace(/\s/g, '').toLowerCase()
 }
 
-function dataUrlToArrayBuffer(dataUrl) {
+export function dataUrlToArrayBuffer(dataUrl) {
   const base64 = dataUrl.split(',')[1]
   if (!base64) throw new Error('文件数据无效')
   const binary = atob(base64)

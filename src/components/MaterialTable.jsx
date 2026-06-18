@@ -279,7 +279,11 @@ export default function MaterialTable({
             </button>
             {file && (
               <>
-                <FilePreviewTrigger file={file} nameClassName="text-xs text-primary-600 hover:underline" />
+                <FilePreviewTrigger
+                  file={file}
+                  nameClassName="text-xs text-primary-600 hover:underline font-medium"
+                />
+                <span className="text-xs text-slate-400">点击文件名可在线打开表格/PDF</span>
                 <button type="button" className="text-xs text-red-500 hover:underline" onClick={() => update({ file: null })}>
                   移除
                 </button>
@@ -298,7 +302,7 @@ export default function MaterialTable({
             }}
           />
           <p className="text-xs text-slate-400 mt-1 mb-4">
-            Excel / CSV 按表头自动填入明细；缺料数列显示具体数量
+            Excel / CSV 按表头自动填入明细；导入后可点击文件名在线预览表格或 PDF
           </p>
         </>
       )}
