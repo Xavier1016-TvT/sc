@@ -1,6 +1,14 @@
 {
   "version": "2.0",
   "envId": "ordprod-d4gqvf6i8e862d191",
+  "app": {
+    "serviceName": "production-dashboard",
+    "framework": "vite",
+    "installCommand": "npm install",
+    "buildCommand": "npm run build",
+    "outputDir": "dist",
+    "deployPath": "/"
+  },
   "hosting": {
     "root": "./dist",
     "ignore": ["node_modules/**", ".git/**"],

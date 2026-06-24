@@ -60,6 +60,7 @@ function normalizeOrder(order) {
   return {
     ...base,
     ...order,
+    isDeleted: order.isDeleted === true,
     sampleInfo: { ...base.sampleInfo, ...(order.sampleInfo || {}) },
     materialPrep: {
       ...defaultMaterialPrep(),

@@ -18,6 +18,8 @@ export function createChipFirmware() {
   return {
     name: '',
     spec: '',
+    program: '',
+    note: '',
     file: null,
   }
 }
@@ -82,6 +84,7 @@ export function createOrder(name = '新订单') {
       items: [],
     },
     subProjects: [],
+    isDeleted: false,
   }
 }
 

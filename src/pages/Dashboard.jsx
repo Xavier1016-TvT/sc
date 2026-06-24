@@ -157,7 +157,9 @@ export default function Dashboard() {
         searchQuery={searchQuery}
         onEdit={(order) => { setEditingOrder(order); setModalOpen(true) }}
         onDelete={(order) => {
-          if (window.confirm(`确定删除订单「${order.name}」？`)) deleteOrder(order.id)
+          if (window.confirm(`确定删除订单「${order.name}」？`)) {
+            deleteOrder(order.id)
+          }
         }}
       />
 

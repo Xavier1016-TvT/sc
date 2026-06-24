@@ -16,6 +16,11 @@ import OrderTypeBadge from '../components/OrderTypeBadge'
 import { ORDER_STATUSES, ORDER_TYPES, ORDER_UNITS } from '../utils/constants'
 import { isReturnRequired, isLargeOrder } from '../utils/orderWorkflow'
 import { defaultSampleInfo, defaultMaterialPrep } from '../utils/orderSync'
+import {
+  getOrderNameLabel,
+  isPieceOrder,
+  orderShowsSubProjectMaterial,
+} from '../utils/orderUnit'
 
 export default function OrderDetail() {
   const { orderId } = useParams()
@@ -46,6 +51,7 @@ export default function OrderDetail() {
   const metrics = getOrderMetrics(order)
   const unit = getOrderUnit(order)
   const hasSubProjects = (order.subProjects || []).length > 0
+  const useSubMaterial = orderShowsSubProjectMaterial(order)
   const sampleInfo = order.sampleInfo || defaultSampleInfo()
   const materialPrep = order.materialPrep || defaultMaterialPrep()
 
@@ -86,7 +92,7 @@ export default function OrderDetail() {
         <div className="card">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="label-text">订单名称</label>
+              <label className="label-text">{getOrderNameLabel(order)}</label>
               <input
                 className="input-field"
                 value={order.name}
@@ -137,7 +143,7 @@ export default function OrderDetail() {
         <OrderMaterialSection
           materialPrep={materialPrep}
           onChange={patchMaterialPrep}
-          hasSubProjects={hasSubProjects}
+          hasSubProjects={useSubMaterial}
           subProjects={order.subProjects}
           orderId={orderId}
         />
@@ -216,6 +222,7 @@ export default function OrderDetail() {
     const name = newSubName.trim() || '新子项目'
     const id = addSubProject(orderId, name)
     setNewSubName('')
+    if (!id) return
     navigate(`/order/${orderId}/sub/${id}`)
   }
 
@@ -304,7 +311,7 @@ export default function OrderDetail() {
       <OrderMaterialSection
         materialPrep={materialPrep}
         onChange={patchMaterialPrep}
-        hasSubProjects={hasSubProjects}
+        hasSubProjects={useSubMaterial}
         subProjects={order.subProjects}
         orderId={orderId}
       />
@@ -312,17 +319,19 @@ export default function OrderDetail() {
       <div className="card">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <h3 className="text-base font-semibold text-slate-800">子项目列表</h3>
-          <div className="flex gap-2">
-            <input
-              className="input-field w-48"
-              placeholder="子项目名称"
-              value={newSubName}
-              onChange={(e) => setNewSubName(e.target.value)}
-            />
-            <button type="button" className="btn-primary" onClick={handleAddSub}>
-              + 新增子项目
-            </button>
-          </div>
+          {!(isPieceOrder(order) && hasSubProjects) && (
+            <div className="flex gap-2">
+              <input
+                className="input-field w-48"
+                placeholder="子项目名称"
+                value={newSubName}
+                onChange={(e) => setNewSubName(e.target.value)}
+              />
+              <button type="button" className="btn-primary" onClick={handleAddSub}>
+                + 新增子项目
+              </button>
+            </div>
+          )}
         </div>
 
         <SubProjectSummaryTable

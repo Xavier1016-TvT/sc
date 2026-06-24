@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react'
 import FileUpload from './FileUpload'
 
 export default function ChipFirmwareSection({ chipFirmware, onChange }) {
-  const fw = chipFirmware || { name: '', spec: '', file: null }
+  const fw = chipFirmware || { name: '', spec: '', program: '', note: '', file: null }
 
   const update = (patch) => onChange({ ...fw, ...patch })
 
@@ -24,6 +23,24 @@ export default function ChipFirmwareSection({ chipFirmware, onChange }) {
           value={fw.spec || ''}
           onChange={(e) => update({ spec: e.target.value })}
           placeholder="型号 / 封装等"
+        />
+      </div>
+      <div>
+        <label className="label-text">程序</label>
+        <input
+          className="input-field"
+          value={fw.program || ''}
+          onChange={(e) => update({ program: e.target.value })}
+          placeholder="程序名称 / 版本号"
+        />
+      </div>
+      <div>
+        <label className="label-text">备注</label>
+        <input
+          className="input-field"
+          value={fw.note || ''}
+          onChange={(e) => update({ note: e.target.value })}
+          placeholder="补充说明"
         />
       </div>
       <div className="sm:col-span-2">

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { ORDER_STATUSES, ORDER_TYPES, ORDER_UNITS } from '../utils/constants'
+import { isPieceOrder } from '../utils/orderUnit'
 
 export default function OrderModal({ open, order, manufacturers, onSave, onClose, onAddManufacturer }) {
   const [form, setForm] = useState({
@@ -32,7 +33,7 @@ export default function OrderModal({ open, order, manufacturers, onSave, onClose
   const handleSubmit = (e) => {
     e.preventDefault()
     if (!form.name.trim()) {
-      alert('请输入订单名称')
+      alert(isPieceOrder(form) ? '请输入子项目名称' : '请输入订单名称')
       return
     }
     const payload = { ...form }
@@ -55,12 +56,14 @@ export default function OrderModal({ open, order, manufacturers, onSave, onClose
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="label-text">订单名称</label>
+            <label className="label-text">
+              {form.quantityUnit === '个' ? '子项目名称' : '订单名称'}
+            </label>
             <input
               className="input-field"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="输入订单名称"
+              placeholder={form.quantityUnit === '个' ? '输入产品/子项目名称' : '输入订单名称'}
             />
           </div>
           <div>
@@ -101,9 +104,9 @@ export default function OrderModal({ open, order, manufacturers, onSave, onClose
               </select>
             </div>
             <p className="text-xs text-slate-400 mt-1">
-              {form.orderType === '大订单'
-                ? '大订单完成率按已出货计算'
-                : '小订单完成率按已贴回计算'}
+              {form.quantityUnit === '个'
+                ? '名称即为子项目名称'
+                : '一套可包含多个子项目，进入生产后分别管理'}
             </p>
           </div>
           {showManufacturer && (

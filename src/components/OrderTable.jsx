@@ -4,6 +4,7 @@ import OrderTypeBadge from './OrderTypeBadge'
 import TableScrollBody from './TableScrollBody'
 import { isLargeOrder } from '../utils/orderWorkflow'
 import { formatQty, getOrderUnit, formatOrderDocConfirmation, getOrderMaterialStatusText, hasOrderMaterialShortage, isOrderMaterialComplete } from '../utils/calculations'
+import { getOrderDisplayName, getOrderDetailPath } from '../utils/orderUnit'
 
 export default function OrderTable({ orders, orderMetrics, onEdit, onDelete, mode = '全部', searchQuery = '' }) {
   if (!orders.length) {
@@ -23,7 +24,7 @@ export default function OrderTable({ orders, orderMetrics, onEdit, onDelete, mod
       <TableShell title="未下单订单">
         <thead>
           <tr>
-            <th className="table-th">订单名称</th>
+            <th className="table-th">名称</th>
             <th className="table-th">类型</th>
             <th className="table-th">订单数量</th>
             <th className="table-th">贴样日期</th>
@@ -37,7 +38,7 @@ export default function OrderTable({ orders, orderMetrics, onEdit, onDelete, mod
             const s = order.sampleInfo || {}
             return (
               <tr key={order.id} className="hover:bg-slate-50/50">
-                <td className="table-td font-medium">{order.name}</td>
+                <td className="table-td font-medium">{getOrderDisplayName(order)}</td>
                 <td className="table-td"><OrderTypeBadge type={order.orderType} /></td>
                 <td className="table-td">{formatQty(order.quantity, getOrderUnit(order))}</td>
                 <td className="table-td">{s.date || '—'}</td>
@@ -59,7 +60,7 @@ export default function OrderTable({ orders, orderMetrics, onEdit, onDelete, mod
       <TableShell title="已结单订单">
         <thead>
           <tr>
-            <th className="table-th">订单名称</th>
+            <th className="table-th">名称</th>
             <th className="table-th">类型</th>
             <th className="table-th">订单数量</th>
             <th className="table-th">已出货</th>
@@ -72,7 +73,7 @@ export default function OrderTable({ orders, orderMetrics, onEdit, onDelete, mod
             const m = metricsMap[order.id]
             return (
               <tr key={order.id} className="hover:bg-slate-50/50">
-                <td className="table-td font-medium">{order.name}</td>
+                <td className="table-td font-medium">{getOrderDisplayName(order)}</td>
                 <td className="table-td"><OrderTypeBadge type={order.orderType} /></td>
                 <td className="table-td">{formatQty(order.quantity, getOrderUnit(order))}</td>
                 <td className="table-td font-medium text-primary-600">
@@ -120,10 +121,10 @@ export default function OrderTable({ orders, orderMetrics, onEdit, onDelete, mod
             <tr key={order.id} className="hover:bg-slate-50/50">
               <td className="table-td">
                 <Link
-                  to={`/order/${order.id}`}
+                  to={getOrderDetailPath(order)}
                   className="font-medium text-slate-800 hover:text-primary-600 hover:underline"
                 >
-                  {order.name}
+                  {getOrderDisplayName(order)}
                 </Link>
                 {order.manufacturer && (
                   <div className="text-xs text-slate-400 mt-0.5">{order.manufacturer}</div>
@@ -182,7 +183,7 @@ function TableShell({ title, children }) {
 function Actions({ order, onEdit, onDelete }) {
   return (
     <div className="flex items-center gap-2">
-      <Link to={`/order/${order.id}`} className="btn-ghost">
+      <Link to={getOrderDetailPath(order)} className="btn-ghost">
         查看详情
       </Link>
       <button type="button" className="btn-ghost" onClick={() => onEdit(order)}>

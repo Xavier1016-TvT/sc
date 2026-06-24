@@ -12,8 +12,10 @@ const SYNC_LABELS = {
 
 export default function Layout() {
   const location = useLocation()
-  const isHome = location.pathname === '/'
-  const { syncStatus } = useData()
+  const isHome = location.pathname === '/' || location.pathname === ''
+  const isRecycleBin = location.pathname === '/recycle-bin'
+  const { syncStatus, deletedOrders } = useData()
+  const deletedCount = deletedOrders.length
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
@@ -34,17 +36,39 @@ export default function Layout() {
               )}
             </div>
           </Link>
-          <span
-            className={`text-xs px-2.5 py-1 rounded-full ${
-              syncStatus === 'error'
-                ? 'bg-red-100 text-red-700'
-                : syncStatus === 'saving'
-                  ? 'bg-amber-100 text-amber-700'
-                  : 'bg-emerald-100 text-emerald-700'
-            }`}
-          >
-            {SYNC_LABELS[syncStatus] || syncStatus}
-          </span>
+          <div className="flex items-center gap-3">
+            <Link
+              to="/recycle-bin"
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                isRecycleBin
+                  ? 'bg-slate-800 text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              <span>🗑️</span>
+              <span>回收站</span>
+              {deletedCount > 0 && (
+                <span
+                  className={`min-w-[1.25rem] h-5 px-1.5 rounded-full text-[11px] font-semibold flex items-center justify-center ${
+                    isRecycleBin ? 'bg-white/20 text-white' : 'bg-slate-300 text-slate-700'
+                  }`}
+                >
+                  {deletedCount}
+                </span>
+              )}
+            </Link>
+            <span
+              className={`text-xs px-2.5 py-1 rounded-full ${
+                syncStatus === 'error'
+                  ? 'bg-red-100 text-red-700'
+                  : syncStatus === 'saving'
+                    ? 'bg-amber-100 text-amber-700'
+                    : 'bg-emerald-100 text-emerald-700'
+              }`}
+            >
+              {SYNC_LABELS[syncStatus] || syncStatus}
+            </span>
+          </div>
         </div>
       </header>
       <main className="app-container py-6">

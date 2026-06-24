@@ -40,8 +40,12 @@ export default function SubProjectDetail() {
   const patch = (data) => updateSubProject(orderId, subId, data)
   const samplePassed = order.sampleInfo?.result === '通过'
   const materialStatus = sub.materialStatus || { option: '备料中', note: '', file: null, items: [] }
-  const chipFirmware = sub.chipFirmware || { name: '', spec: '', file: null }
+  const chipFirmware = sub.chipFirmware || { name: '', spec: '', program: '', note: '', file: null }
   const defectRecords = sub.defectRecords || []
+  const processRecords = sub.processRecords || []
+  const problemNotes = sub.problemNotes || []
+  const shippingRecords = sub.shippingRecords || []
+  const docConfirmations = sub.docConfirmations || []
 
   const toggleSection = (id) => {
     setOpenSection((prev) => (prev === id ? null : id))
@@ -52,7 +56,9 @@ export default function SubProjectDetail() {
     onOpenChange: () => toggleSection(id),
   })
 
-  const chipSubtitle = [chipFirmware.name, chipFirmware.spec].filter(Boolean).join(' · ') || '未填写'
+  const chipSubtitle = [chipFirmware.name, chipFirmware.spec, chipFirmware.program]
+    .filter(Boolean)
+    .join(' · ') || '未填写'
 
   return (
     <div className="space-y-4">
@@ -124,16 +130,16 @@ export default function SubProjectDetail() {
 
       <CollapsibleSection
         title="资料确认"
-        subtitle={`${sub.docConfirmations?.filter((d) => d.status === '已确认').length || 0}/${sub.docConfirmations?.length || 0} 已确认`}
+        subtitle={`${docConfirmations.filter((d) => d.status === '已确认').length}/${docConfirmations.length} 已确认`}
         {...sectionProps('doc')}
       >
         <div className="pt-4">
           <DocConfirmationSection
-            items={sub.docConfirmations}
+            items={docConfirmations}
             onChange={(docConfirmations) => patch({ docConfirmations })}
-            onAdd={(doc) => patch({ docConfirmations: [...(sub.docConfirmations || []), doc] })}
+            onAdd={(doc) => patch({ docConfirmations: [...docConfirmations, doc] })}
             onRemove={(id) =>
-              patch({ docConfirmations: (sub.docConfirmations || []).filter((d) => d.id !== id) })
+              patch({ docConfirmations: docConfirmations.filter((d) => d.id !== id) })
             }
           />
         </div>
@@ -156,7 +162,7 @@ export default function SubProjectDetail() {
             >
               <div className="pt-4">
                 <ProcessRecordsTable
-                  records={sub.processRecords}
+                  records={processRecords}
                   onChange={(processRecords) => patch({ processRecords })}
                 />
               </div>
@@ -165,12 +171,12 @@ export default function SubProjectDetail() {
 
           <CollapsibleSection
             title="问题备注"
-            subtitle={`${sub.problemNotes?.length || 0} 条`}
+            subtitle={`${problemNotes.length} 条`}
             {...sectionProps('problem')}
           >
             <div className="pt-4">
               <ProblemNotesTable
-                notes={sub.problemNotes}
+                notes={problemNotes}
                 onChange={(problemNotes) => patch({ problemNotes })}
               />
             </div>
@@ -183,7 +189,7 @@ export default function SubProjectDetail() {
           >
             <div className="pt-4">
               <ShippingTable
-                records={sub.shippingRecords}
+                records={shippingRecords}
                 onChange={(shippingRecords) => patch({ shippingRecords })}
                 subProject={sub}
                 smallOrder={isReturnRequired(order)}

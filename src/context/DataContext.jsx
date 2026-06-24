@@ -18,6 +18,8 @@ import {
   defaultMaterialPrep,
 } from '../utils/orderSync'
 import { generateId } from '../utils/id'
+import { getActiveOrders, getDeletedOrders } from '../utils/orderFilters'
+import { getOrderUnit } from '../utils/orderUnit'
 
 const DataContext = createContext(null)
 
@@ -30,7 +32,9 @@ function mergeOrderPatch(order, patch) {
   }
 
   if (patch.materialPrep && (order.subProjects || []).length > 0) {
-    return order
+    if (!(getOrderUnit(order) === '个' && order.status === '未下单')) {
+      return order
+    }
   }
 
   if (patch.materialPrep) {
@@ -126,46 +130,78 @@ export function DataProvider({ children }) {
   const updateOrder = useCallback((orderId, patch) => {
     updateState((prev) => ({
       ...prev,
-      orders: prev.orders.map((o) =>
-        o.id === orderId ? mergeOrderPatch(o, patch) : o
-      ),
+      orders: prev.orders.map((o) => {
+        if (o.id !== orderId) return o
+        let next = mergeOrderPatch(o, patch)
+
+        if (getOrderUnit(next) === '个') {
+          const subs = next.subProjects || []
+          if (patch.name !== undefined && subs.length === 1) {
+            next = applySubProjectPatch(next, subs[0].id, { name: patch.name })
+          }
+          if (patch.status === '生产中' && subs.length === 0 && next.name) {
+            const sub = createSubProjectFromOrder(next.name, next)
+            next = afterSubProjectListChange({ ...next, subProjects: [sub] })
+          }
+        }
+
+        return next
+      }),
     }))
   }, [updateState])
 
   const deleteOrder = useCallback((orderId) => {
     updateState((prev) => ({
       ...prev,
-      orders: prev.orders.filter((o) => o.id !== orderId),
+      orders: prev.orders.map((o) =>
+        o.id === orderId ? { ...o, isDeleted: true } : o
+      ),
+    }))
+  }, [updateState])
+
+  const restoreOrder = useCallback((orderId) => {
+    updateState((prev) => ({
+      ...prev,
+      orders: prev.orders.map((o) =>
+        o.id === orderId ? { ...o, isDeleted: false } : o
+      ),
     }))
   }, [updateState])
 
   const addSubProject = useCallback((orderId, name) => {
-    let newId = ''
-    updateState((prev) => {
-      const order = prev.orders.find((o) => o.id === orderId)
-      const sub = createSubProjectFromOrder(name, order || createOrder(name))
-      newId = sub.id
-      return {
-        ...prev,
-        orders: prev.orders.map((o) =>
-          o.id === orderId
-            ? afterSubProjectListChange({
-                ...o,
-                subProjects: [...(o.subProjects || []), sub],
-              })
-            : o
-        ),
-      }
-    })
-    return newId
-  }, [updateState])
+    const order = state?.orders?.find((o) => o.id === orderId && !o.isDeleted)
+    if (order && getOrderUnit(order) === '个' && (order.subProjects || []).length >= 1) {
+      return order.subProjects[0].id
+    }
+    const sub = createSubProjectFromOrder(name, order || createOrder(name))
+    updateState((prev) => ({
+      ...prev,
+      orders: prev.orders.map((o) =>
+        o.id === orderId
+          ? afterSubProjectListChange({
+              ...o,
+              subProjects: [...(o.subProjects || []), sub],
+            })
+          : o
+      ),
+    }))
+    return sub.id
+  }, [state?.orders, updateState])
 
   const updateSubProject = useCallback((orderId, subId, patch) => {
     updateState((prev) => ({
       ...prev,
-      orders: prev.orders.map((o) =>
-        o.id === orderId ? applySubProjectPatch(o, subId, patch) : o
-      ),
+      orders: prev.orders.map((o) => {
+        if (o.id !== orderId) return o
+        let next = applySubProjectPatch(o, subId, patch)
+        if (patch.name !== undefined && getOrderUnit(next) === '个') {
+          const subs = next.subProjects || []
+          if (subs.length === 1 && subs[0].id === subId) {
+            next = { ...next, name: patch.name }
+          }
+        }
+        return next
+      }),
     }))
   }, [updateState])
 
@@ -213,22 +249,40 @@ export function DataProvider({ children }) {
   }, [])
 
   const getOrder = useCallback(
-    (orderId) => state?.orders?.find((o) => o.id === orderId),
+    (orderId, { includeDeleted = false } = {}) => {
+      const order = state?.orders?.find((o) => o.id === orderId)
+      if (!order) return undefined
+      if (!includeDeleted && order.isDeleted) return undefined
+      return order
+    },
+    [state?.orders]
+  )
+
+  const getDeletedOrder = useCallback(
+    (orderId) => {
+      const order = state?.orders?.find((o) => o.id === orderId)
+      return order?.isDeleted ? order : undefined
+    },
     [state?.orders]
   )
 
   const getSubProject = useCallback(
     (orderId, subId) => {
-      const order = state?.orders?.find((o) => o.id === orderId)
+      const order = getOrder(orderId)
       return order?.subProjects?.find((sp) => sp.id === subId)
     },
-    [state?.orders]
+    [getOrder]
   )
+
+  const allOrders = state?.orders || []
+  const orders = useMemo(() => getActiveOrders(allOrders), [allOrders])
+  const deletedOrders = useMemo(() => getDeletedOrders(allOrders), [allOrders])
 
   const value = useMemo(
     () => ({
       state,
-      orders: state?.orders || [],
+      orders,
+      deletedOrders,
       manufacturers: state?.manufacturers || [],
       loading,
       loadError,
@@ -236,6 +290,7 @@ export function DataProvider({ children }) {
       addOrder,
       updateOrder,
       deleteOrder,
+      restoreOrder,
       addSubProject,
       updateSubProject,
       deleteSubProject,
@@ -243,16 +298,20 @@ export function DataProvider({ children }) {
       updateManufacturer,
       resetData,
       getOrder,
+      getDeletedOrder,
       getSubProject,
     }),
     [
       state,
+      orders,
+      deletedOrders,
       loading,
       loadError,
       syncStatus,
       addOrder,
       updateOrder,
       deleteOrder,
+      restoreOrder,
       addSubProject,
       updateSubProject,
       deleteSubProject,
@@ -260,6 +319,7 @@ export function DataProvider({ children }) {
       updateManufacturer,
       resetData,
       getOrder,
+      getDeletedOrder,
       getSubProject,
     ]
   )
