@@ -77,11 +77,6 @@ export default function OrderModal({ open, order, manufacturers, onSave, onClose
                 <option key={t} value={t}>{t}</option>
               ))}
             </select>
-            <p className="text-xs text-slate-400 mt-1">
-              {form.orderType === '小订单'
-                ? '工厂贴片后发回公司，由公司测试'
-                : '工厂完成贴片、测试与出货，公司跟进进度'}
-            </p>
           </div>
           <div>
             <label className="label-text">订单数量</label>

@@ -35,7 +35,7 @@ export default function ShippingTable({ records, onChange, subProject, smallOrde
           </thead>
           <tbody className="divide-y divide-slate-100">
             {records.map((r) => (
-              <tr key={r.id}>
+              <tr key={r.id} id={`highlight-${r.id}`}>
                 <td className="table-td p-1">
                   <input
                     type="date"

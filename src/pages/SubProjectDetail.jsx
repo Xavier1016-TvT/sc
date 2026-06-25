@@ -16,10 +16,11 @@ import ProcessRecordsTable from '../components/ProcessRecordsTable'
 import ProblemNotesTable from '../components/ProblemNotesTable'
 import ShippingTable from '../components/ShippingTable'
 import DefectStatsTable from '../components/DefectStatsTable'
+import PageBreadcrumb from '../components/PageBreadcrumb'
 import { getMaterialSubtitle } from '../utils/materialAggregate'
-import OrderWorkflowBanner from '../components/OrderWorkflowBanner'
 import OrderTypeBadge from '../components/OrderTypeBadge'
-import { isLargeOrder, isReturnRequired } from '../utils/orderWorkflow'
+import { isLargeOrder } from '../utils/orderWorkflow'
+import { useSearchTarget } from '../hooks/useSearchTarget'
 
 export default function SubProjectDetail() {
   const { orderId, subId } = useParams()
@@ -27,6 +28,8 @@ export default function SubProjectDetail() {
   const order = getOrder(orderId)
   const sub = getSubProject(orderId, subId)
   const [openSection, setOpenSection] = useState(null)
+
+  useSearchTarget({ onSection: setOpenSection })
 
   if (!order || !sub) {
     return (
@@ -52,6 +55,7 @@ export default function SubProjectDetail() {
   }
 
   const sectionProps = (id) => ({
+    sectionId: id,
     open: openSection === id,
     onOpenChange: () => toggleSection(id),
   })
@@ -62,13 +66,13 @@ export default function SubProjectDetail() {
 
   return (
     <div className="space-y-4">
-      <nav className="text-sm text-slate-500">
-        <Link to="/" className="hover:text-primary-600">首页</Link>
-        <span className="mx-2">/</span>
-        <Link to={`/order/${orderId}`} className="hover:text-primary-600">{order.name}</Link>
-        <span className="mx-2">/</span>
-        <span className="text-slate-800">{sub.name}</span>
-      </nav>
+      <PageBreadcrumb
+        items={[
+          { label: '首页', to: '/' },
+          { label: order.name, to: `/order/${orderId}` },
+          { label: sub.name },
+        ]}
+      />
 
       <div className="card">
         <div className="flex items-center gap-2">
@@ -77,7 +81,6 @@ export default function SubProjectDetail() {
         </div>
         <p className="text-sm text-slate-500 mt-1">所属订单：{order.name}</p>
       </div>
-      <OrderWorkflowBanner order={order} />
 
       <CollapsibleSection
         title="基本信息"
@@ -103,9 +106,6 @@ export default function SubProjectDetail() {
             />
           </div>
         </div>
-        <p className="text-xs text-slate-400 mt-3">
-          贴样情况请在订单详情页维护；物料状态在本页维护
-        </p>
       </CollapsibleSection>
 
       <CollapsibleSection title="芯片固件" subtitle={chipSubtitle} {...sectionProps('chip')}>
@@ -150,7 +150,6 @@ export default function SubProjectDetail() {
           订单贴样结果为「通过」后，方可编辑
           {isLargeOrder(order) ? '工序、' : ''}
           出货不良统计、问题备注和出货情况。
-          {isReturnRequired(order) && ' 小订单无需工序记录，贴回信息请在结单后填写。'}
         </div>
       ) : (
         <>
@@ -192,7 +191,7 @@ export default function SubProjectDetail() {
                 records={shippingRecords}
                 onChange={(shippingRecords) => patch({ shippingRecords })}
                 subProject={sub}
-                smallOrder={isReturnRequired(order)}
+                smallOrder={!isLargeOrder(order)}
               />
             </div>
           </CollapsibleSection>

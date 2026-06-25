@@ -8,6 +8,9 @@ export default function OrderMaterialSection({
   hasSubProjects = false,
   subProjects = [],
   orderId,
+  sectionId = 'material',
+  open,
+  onOpenChange,
 }) {
   const prep = materialPrep || { option: '备料中', note: '', file: null, items: [] }
 
@@ -15,6 +18,9 @@ export default function OrderMaterialSection({
     <CollapsibleSection
       title={hasSubProjects ? '物料状态（总览）' : '物料状态'}
       subtitle={getMaterialSubtitle(prep, { isSummary: hasSubProjects })}
+      sectionId={sectionId}
+      open={open}
+      onOpenChange={onOpenChange}
     >
       <div className="pt-4">
         <MaterialTable

@@ -84,4 +84,19 @@ body {
   .table-fixed-body-red thead th {
     @apply bg-red-100 text-red-800 shadow-[0_1px_0_0_rgb(254_202_202)];
   }
+  .page-breadcrumb {
+    position: sticky;
+    top: var(--app-header-height);
+    z-index: 20;
+    @apply -mx-4 sm:-mx-5 lg:-mx-8 xl:-mx-10 px-4 sm:px-5 lg:px-8 xl:px-10 py-2.5 mb-2 bg-white/95 backdrop-blur-sm border-b border-slate-200/80;
+  }
+  .search-highlight {
+    @apply ring-2 ring-primary-400 ring-offset-2 transition-shadow duration-300;
+    animation: search-pulse 1.2s ease-in-out 2;
+  }
+}
+
+@keyframes search-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.35); }
+  50% { box-shadow: 0 0 0 6px rgba(37, 99, 235, 0); }
 }

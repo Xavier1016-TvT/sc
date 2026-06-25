@@ -83,6 +83,7 @@ export default function Dashboard() {
         onSearchChange={setSearchQuery}
         resultCount={filteredOrders.length}
         totalCount={statusFilteredOrders.length}
+        orders={orders}
       >
         {isProductionView ? (
           <>

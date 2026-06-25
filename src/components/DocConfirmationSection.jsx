@@ -178,6 +178,7 @@ export default function DocConfirmationSection({ items, onChange, onAdd, onRemov
             return (
               <div
                 key={doc.id}
+                id={`highlight-${doc.id}`}
                 className={`rounded-xl border overflow-hidden transition-shadow hover:shadow-sm ${
                   isConfirmed ? 'border-emerald-100 bg-white' : 'border-slate-100 bg-white'
                 }`}

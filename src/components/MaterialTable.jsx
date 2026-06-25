@@ -48,7 +48,7 @@ function MaterialItemsReadOnlyTable({ items = [] }) {
             const shortage = getItemShortage(it)
             const isShort = shortage > 0
             return (
-              <tr key={it.id} className={isShort ? 'bg-red-50/70' : undefined}>
+              <tr key={it.id} id={it.id ? `highlight-${it.id}` : undefined} className={isShort ? 'bg-red-50/70' : undefined}>
                 <td className="table-td font-medium whitespace-nowrap">{it.code || '—'}</td>
                 <td className="table-td">{it.name || '—'}</td>
                 <td className="table-td">{it.spec || '—'}</td>
@@ -430,6 +430,7 @@ export default function MaterialTable({
               return (
                 <tr
                   key={it.id}
+                  id={it.id ? `highlight-${it.id}` : undefined}
                   className={isShort ? 'bg-red-50/70' : undefined}
                 >
                   {EDIT_TEXT_COLS.map(({ field, minW }) => (

@@ -13,6 +13,7 @@ import OrderMaterialSection from '../components/OrderMaterialSection'
 import SubProjectSummaryTable from '../components/SubProjectSummaryTable'
 import ReturnRecordsTable from '../components/ReturnRecordsTable'
 import OrderTypeBadge from '../components/OrderTypeBadge'
+import PageBreadcrumb from '../components/PageBreadcrumb'
 import { ORDER_STATUSES, ORDER_TYPES, ORDER_UNITS } from '../utils/constants'
 import { isReturnRequired, isLargeOrder } from '../utils/orderWorkflow'
 import { defaultSampleInfo, defaultMaterialPrep } from '../utils/orderSync'
@@ -21,6 +22,7 @@ import {
   isPieceOrder,
   orderShowsSubProjectMaterial,
 } from '../utils/orderUnit'
+import { useSearchTarget } from '../hooks/useSearchTarget'
 
 export default function OrderDetail() {
   const { orderId } = useParams()
@@ -38,6 +40,9 @@ export default function OrderDetail() {
   const [newSubName, setNewSubName] = useState('')
   const [editingSub, setEditingSub] = useState(null)
   const [newMfr, setNewMfr] = useState('')
+  const [openSection, setOpenSection] = useState(null)
+
+  useSearchTarget({ onSection: setOpenSection })
 
   if (!order) {
     return (
@@ -47,6 +52,25 @@ export default function OrderDetail() {
       </div>
     )
   }
+
+  const sectionProps = (id, { defaultOpen = false } = {}) => {
+    if (openSection === null) {
+      return defaultOpen ? { defaultOpen: true } : {}
+    }
+    return {
+      open: openSection === id,
+      onOpenChange: () => setOpenSection((prev) => (prev === id ? null : id)),
+    }
+  }
+
+  const breadcrumb = (
+    <PageBreadcrumb
+      items={[
+        { label: '首页', to: '/' },
+        { label: order.name },
+      ]}
+    />
+  )
 
   const metrics = getOrderMetrics(order)
   const unit = getOrderUnit(order)
@@ -83,6 +107,7 @@ export default function OrderDetail() {
   if (order.status === '未下单') {
     return (
       <div className="space-y-4">
+        {breadcrumb}
         <WorkflowHeader
           order={order}
           onAdvance={() => changeStatus('生产中')}
@@ -138,7 +163,7 @@ export default function OrderDetail() {
         <OrderSampleSection
           sampleInfo={sampleInfo}
           onChange={patchSample}
-          defaultOpen
+          {...sectionProps('sample', { defaultOpen: true })}
         />
         <OrderMaterialSection
           materialPrep={materialPrep}
@@ -146,6 +171,7 @@ export default function OrderDetail() {
           hasSubProjects={useSubMaterial}
           subProjects={order.subProjects}
           orderId={orderId}
+          {...sectionProps('material')}
         />
       </div>
     )
@@ -154,6 +180,7 @@ export default function OrderDetail() {
   if (order.status === '已结单') {
     return (
       <div className="space-y-4">
+        {breadcrumb}
         <WorkflowHeader
           order={order}
           onBack={goBackStatus}
@@ -234,6 +261,7 @@ export default function OrderDetail() {
 
   return (
     <div className="space-y-6">
+      {breadcrumb}
       <WorkflowHeader
         order={order}
         onBack={goBackStatus}
@@ -307,16 +335,21 @@ export default function OrderDetail() {
         </div>
       </div>
 
-      <OrderSampleSection sampleInfo={sampleInfo} onChange={patchSample} />
+      <OrderSampleSection
+        sampleInfo={sampleInfo}
+        onChange={patchSample}
+        {...sectionProps('sample')}
+      />
       <OrderMaterialSection
         materialPrep={materialPrep}
         onChange={patchMaterialPrep}
         hasSubProjects={useSubMaterial}
         subProjects={order.subProjects}
         orderId={orderId}
+        {...sectionProps('material')}
       />
 
-      <div className="card">
+      <div id="section-subs" className="card">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <h3 className="text-base font-semibold text-slate-800">子项目列表</h3>
           {!(isPieceOrder(order) && hasSubProjects) && (
@@ -357,14 +390,7 @@ function WorkflowHeader({ order, onBack, backLabel, onAdvance, nextLabel }) {
   const currentIdx = steps.indexOf(order.status)
 
   return (
-    <>
-      <nav className="text-sm text-slate-500">
-        <Link to="/" className="hover:text-primary-600">首页</Link>
-        <span className="mx-2">/</span>
-        <span className="text-slate-800">{order.name}</span>
-      </nav>
-
-      <div className="card">
+    <div className="card">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             {steps.map((step, i) => (
@@ -398,7 +424,6 @@ function WorkflowHeader({ order, onBack, backLabel, onAdvance, nextLabel }) {
           </div>
         </div>
       </div>
-    </>
   )
 }
 

@@ -2,14 +2,24 @@ import CollapsibleSection from './CollapsibleSection'
 import FileUpload from './FileUpload'
 import { SAMPLE_STATUSES } from '../utils/constants'
 
-export default function OrderSampleSection({ sampleInfo, onChange, defaultOpen = false }) {
+export default function OrderSampleSection({
+  sampleInfo,
+  onChange,
+  defaultOpen = false,
+  sectionId = 'sample',
+  open,
+  onOpenChange,
+}) {
   const info = sampleInfo || { date: '', quantity: 0, result: '', image: null }
 
   return (
     <CollapsibleSection
       title="贴样情况"
       subtitle={[info.date, info.result].filter(Boolean).join(' · ') || '待填写'}
+      sectionId={sectionId}
       defaultOpen={defaultOpen}
+      open={open}
+      onOpenChange={onOpenChange}
     >
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
         <div>

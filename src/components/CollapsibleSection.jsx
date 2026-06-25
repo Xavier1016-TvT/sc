@@ -8,6 +8,7 @@ export default function CollapsibleSection({
   onOpenChange,
   children,
   badge,
+  sectionId,
 }) {
   const [internalOpen, setInternalOpen] = useState(defaultOpen)
   const isControlled = controlledOpen !== undefined
@@ -22,7 +23,7 @@ export default function CollapsibleSection({
   }
 
   return (
-    <div className="card p-0 overflow-hidden">
+    <div id={sectionId ? `section-${sectionId}` : undefined} className="card p-0 overflow-hidden">
       <button
         type="button"
         className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left hover:bg-slate-50 transition-colors"

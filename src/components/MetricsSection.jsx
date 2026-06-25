@@ -1,11 +1,12 @@
 import OrderSearchBar from './OrderSearchBar'
 
-/** 指标区：顶部搜索 + 下方指标卡片 */
+/** 嵌入指标区域的订单搜索 + 下方指标卡片 */
 export default function MetricsSection({
   searchQuery,
   onSearchChange,
   resultCount,
   totalCount,
+  orders = [],
   children,
 }) {
   return (
@@ -17,6 +18,7 @@ export default function MetricsSection({
           onChange={onSearchChange}
           resultCount={resultCount}
           totalCount={totalCount}
+          orders={orders}
         />
       </div>
       {children}

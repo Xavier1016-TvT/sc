@@ -28,7 +28,7 @@ export default function ProblemNotesTable({ notes, onChange }) {
       </div>
       <div className="space-y-4">
         {notes.map((n) => (
-          <div key={n.id} className="p-4 bg-slate-50 rounded-lg border border-slate-100">
+          <div key={n.id} id={`highlight-${n.id}`} className="p-4 bg-slate-50 rounded-lg border border-slate-100">
             <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr] gap-3">
               <div>
                 <label className="label-text">日期</label>

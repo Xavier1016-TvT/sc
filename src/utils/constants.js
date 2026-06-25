@@ -9,7 +9,6 @@ export const CLOUD_STATE_DOC_ID = 'global_state'
 
 export const ORDER_STATUSES = ['未下单', '生产中', '已结单']
 
-/** 小订单回公司测试；大订单工厂全流程 */
 export const ORDER_TYPES = ['小订单', '大订单']
 
 export const ORDER_UNITS = ['套', '个']

@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import { useData } from '../context/DataContext'
 import StatusBadge from '../components/StatusBadge'
 import OrderTypeBadge from '../components/OrderTypeBadge'
+import PageBreadcrumb from '../components/PageBreadcrumb'
 import TableScrollBody from '../components/TableScrollBody'
 import { formatQty, getOrderUnit } from '../utils/calculations'
 import { filterOrdersBySearch } from '../utils/searchOrders'
@@ -24,11 +25,12 @@ export default function RecycleBin() {
 
   return (
     <div className="space-y-6">
-      <nav className="text-sm text-slate-500">
-        <Link to="/" className="hover:text-primary-600">首页</Link>
-        <span className="mx-2">/</span>
-        <span className="text-slate-800">回收站</span>
-      </nav>
+      <PageBreadcrumb
+        items={[
+          { label: '首页', to: '/' },
+          { label: '回收站' },
+        ]}
+      />
 
       <div className="card bg-gradient-to-br from-slate-50 to-white border-slate-200">
         <div className="flex flex-wrap items-start justify-between gap-4">

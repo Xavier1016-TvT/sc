@@ -10,9 +10,9 @@ export function isLargeOrder(order) {
 
 export function getWorkflowDescription(order) {
   if (isLargeOrder(order)) {
-    return '大订单：工厂完成贴片、测试与出货，公司跟进进度'
+    return '大订单'
   }
-  return '小订单：工厂贴片后发回公司，由公司测试检验'
+  return '小订单'
 }
 
 /** 小订单结单后需登记贴回 */
