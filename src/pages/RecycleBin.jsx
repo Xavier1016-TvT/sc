@@ -6,6 +6,7 @@ import OrderTypeBadge from '../components/OrderTypeBadge'
 import PageBreadcrumb from '../components/PageBreadcrumb'
 import TableScrollBody from '../components/TableScrollBody'
 import { formatQty, getOrderUnit } from '../utils/calculations'
+import { getDashboardHomePath } from '../utils/dashboardNav'
 import { filterOrdersBySearch } from '../utils/searchOrders'
 
 export default function RecycleBin() {
@@ -27,7 +28,7 @@ export default function RecycleBin() {
     <div className="space-y-6">
       <PageBreadcrumb
         items={[
-          { label: '首页', to: '/' },
+          { label: '首页', to: getDashboardHomePath() },
           { label: '回收站' },
         ]}
       />

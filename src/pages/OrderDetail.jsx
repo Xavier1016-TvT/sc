@@ -22,6 +22,7 @@ import {
   isPieceOrder,
   orderShowsSubProjectMaterial,
 } from '../utils/orderUnit'
+import { getDashboardHomePath } from '../utils/dashboardNav'
 import { useSearchTarget } from '../hooks/useSearchTarget'
 
 export default function OrderDetail() {
@@ -66,7 +67,7 @@ export default function OrderDetail() {
   const breadcrumb = (
     <PageBreadcrumb
       items={[
-        { label: '首页', to: '/' },
+        { label: '首页', to: getDashboardHomePath() },
         { label: order.name },
       ]}
     />

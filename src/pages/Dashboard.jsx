@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useData } from '../context/DataContext'
 import { getGlobalSummary, formatPercent } from '../utils/calculations'
 import { buildMetricDetail } from '../utils/metricDetails'
@@ -9,14 +10,41 @@ import OrderTable from '../components/OrderTable'
 import OrderModal from '../components/OrderModal'
 import MetricsSection from '../components/MetricsSection'
 import { filterOrdersBySearch } from '../utils/searchOrders'
+import { saveDashboardFilters } from '../utils/dashboardNav'
+
+const STATUS_TABS = ['全部', ...ORDER_STATUSES]
+
+function readTab(param) {
+  return STATUS_TABS.includes(param) ? param : '全部'
+}
 
 export default function Dashboard() {
   const { orders, manufacturers, addOrder, updateOrder, deleteOrder, addManufacturer } = useData()
-  const [statusTab, setStatusTab] = useState('全部')
-  const [searchQuery, setSearchQuery] = useState('')
+  const [searchParams, setSearchParams] = useSearchParams()
   const [modalOpen, setModalOpen] = useState(false)
   const [editingOrder, setEditingOrder] = useState(null)
   const [activeMetric, setActiveMetric] = useState(null)
+
+  const searchQuery = searchParams.get('q') || ''
+  const statusTab = readTab(searchParams.get('tab'))
+
+  const updateFilters = (patch) => {
+    const nextQ = patch.q !== undefined ? patch.q : searchQuery
+    const nextTab = patch.tab !== undefined ? patch.tab : statusTab
+    saveDashboardFilters({ q: nextQ, tab: nextTab })
+
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      if (nextQ.trim()) next.set('q', nextQ)
+      else next.delete('q')
+      if (nextTab && nextTab !== '全部') next.set('tab', nextTab)
+      else next.delete('tab')
+      return next
+    }, { replace: true })
+  }
+
+  const setSearchQuery = (value) => updateFilters({ q: value })
+  const setStatusTab = (tab) => updateFilters({ tab })
 
   const statusFilteredOrders = useMemo(() => {
     if (statusTab === '全部') return orders

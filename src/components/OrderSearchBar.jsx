@@ -22,7 +22,6 @@ export default function OrderSearchBar({
   )
 
   const handleSelect = (hit) => {
-    onChange('')
     setOpen(false)
     navigate(getSearchHitPath(hit))
   }

@@ -73,7 +73,7 @@ export default function ShippingTable({ records, onChange, subProject, smallOrde
                     className="input-field textarea-compact w-full min-w-[140px]"
                     rows={2}
                     value={r.note || ''}
-                    placeholder="备注"
+                    placeholder="备注，可拖拽右下角拉高"
                     onChange={(e) => update(r.id, { note: e.target.value })}
                   />
                 </td>

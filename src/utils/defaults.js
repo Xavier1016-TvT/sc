@@ -16,12 +16,29 @@ export function createDocConfirmation(name) {
 
 export function createChipFirmware() {
   return {
+    id: generateId('chip'),
     name: '',
     spec: '',
     program: '',
     note: '',
     file: null,
   }
+}
+
+/** 兼容旧版单条 chipFirmware，统一为数组 */
+export function normalizeChipFirmwares(raw, legacySingle) {
+  if (Array.isArray(raw)) {
+    return raw.map((fw) => ({
+      ...createChipFirmware(),
+      ...fw,
+      id: fw.id || generateId('chip'),
+    }))
+  }
+  const legacy = legacySingle || (raw && !Array.isArray(raw) ? raw : null)
+  if (legacy && (legacy.name || legacy.spec || legacy.program || legacy.note || legacy.file)) {
+    return [{ ...createChipFirmware(), ...legacy, id: legacy.id || generateId('chip') }]
+  }
+  return []
 }
 
 export function createMaterialItem() {
@@ -46,7 +63,7 @@ export function createSubProject(name = '新子项目') {
     quantity: null,
     sampleStatus: '进行中',
     docConfirmations: [],
-    chipFirmware: createChipFirmware(),
+    chipFirmwares: [],
     materialStatus: {
       option: '备料中',
       note: '',

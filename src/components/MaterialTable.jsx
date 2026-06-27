@@ -15,9 +15,9 @@ import {
 } from '../utils/materialAggregate'
 
 const EDIT_TEXT_COLS = [
-  { field: 'code', label: '编码', minW: 'min-w-[120px]' },
-  { field: 'name', label: '物料名称', minW: 'min-w-[200px]' },
-  { field: 'spec', label: '规格', minW: 'min-w-[180px]' },
+  { field: 'code', label: '编码', minW: 'min-w-[140px]' },
+  { field: 'name', label: '物料名称', minW: 'min-w-[240px]' },
+  { field: 'spec', label: '规格', minW: 'min-w-[220px]' },
 ]
 
 const EDIT_NUM_COLS = [
@@ -419,7 +419,7 @@ export default function MaterialTable({
               ))}
               <th className="table-th min-w-[72px] text-center">缺料数</th>
               <th className="table-th min-w-[100px]">物料状态</th>
-              <th className="table-th min-w-[160px]">备注</th>
+              <th className="table-th min-w-[220px]">备注</th>
               <th className="table-th min-w-[96px]">物料类型</th>
               {!readOnly && <th className="table-th w-12" />}
             </tr>
@@ -475,14 +475,14 @@ export default function MaterialTable({
                       onChange={(e) => updateItem(it.id, { status: e.target.value })}
                     />
                   </td>
-                  <td className="table-td min-w-[160px]">
+                  <td className="table-td min-w-[220px] align-top">
                     <textarea
-                      className="input-field textarea-compact w-full"
+                      className="input-field textarea-compact w-full min-w-[200px]"
                       rows={2}
                       value={it.note}
                       readOnly={readOnly}
                       onChange={(e) => updateItem(it.id, { note: e.target.value })}
-                      placeholder="备注"
+                      placeholder="备注，可拖拽右下角拉高"
                     />
                   </td>
                   <td className="table-td min-w-[96px]">

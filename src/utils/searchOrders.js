@@ -52,9 +52,15 @@ export function matchOrderSearch(order, query) {
     ...(order.subProjects || []).map((sp) => sp.materialStatus?.option),
     ...(order.subProjects || []).map((sp) => sp.materialStatus?.note),
     ...collectMaterialItems(order).flatMap(materialItemSearchTexts),
+    ...(order.subProjects || []).flatMap((sp) =>
+      (sp.chipFirmwares || []).flatMap((fw) => [fw.name, fw.spec, fw.program, fw.note])
+    ),
     ...(order.subProjects || []).flatMap((sp) => {
-      const fw = sp.chipFirmware || {}
-      return [fw.name, fw.spec, fw.program, fw.note]
+      const legacy = sp.chipFirmware
+      if (legacy && !sp.chipFirmwares?.length) {
+        return [legacy.name, legacy.spec, legacy.program, legacy.note]
+      }
+      return []
     }),
     ...(order.subProjects || []).flatMap((sp) =>
       (sp.docConfirmations || []).flatMap((d) => [d.name, d.note])
@@ -182,16 +188,17 @@ export function findOrderSearchHits(orders, query, limit = 25) {
         })
       }
 
-      const fw = sub.chipFirmware || {}
-      const chipField = ['name', 'spec', 'program', 'note'].find((f) => textMatches(fw[f], q))
-      if (chipField) {
+      for (const fw of sub.chipFirmwares || []) {
+        const chipField = ['name', 'spec', 'program', 'note'].find((f) => textMatches(fw[f], q))
+        if (!chipField) continue
         pushHit(hits, {
-          id: `sub-${sub.id}-chip`,
+          id: `sub-${sub.id}-chip-${fw.id}`,
           orderId: order.id,
           orderName,
           subId: sub.id,
           subName: sub.name,
           section: 'chip',
+          targetId: fw.id,
           category: '芯片固件',
           title: fw[chipField],
           detail: `${orderName} / ${sub.name}`,

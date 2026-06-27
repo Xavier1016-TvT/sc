@@ -20,6 +20,7 @@ import PageBreadcrumb from '../components/PageBreadcrumb'
 import { getMaterialSubtitle } from '../utils/materialAggregate'
 import OrderTypeBadge from '../components/OrderTypeBadge'
 import { isLargeOrder } from '../utils/orderWorkflow'
+import { getDashboardHomePath } from '../utils/dashboardNav'
 import { useSearchTarget } from '../hooks/useSearchTarget'
 
 export default function SubProjectDetail() {
@@ -43,7 +44,7 @@ export default function SubProjectDetail() {
   const patch = (data) => updateSubProject(orderId, subId, data)
   const samplePassed = order.sampleInfo?.result === '通过'
   const materialStatus = sub.materialStatus || { option: '备料中', note: '', file: null, items: [] }
-  const chipFirmware = sub.chipFirmware || { name: '', spec: '', program: '', note: '', file: null }
+  const chipFirmwares = sub.chipFirmwares || []
   const defectRecords = sub.defectRecords || []
   const processRecords = sub.processRecords || []
   const problemNotes = sub.problemNotes || []
@@ -60,15 +61,17 @@ export default function SubProjectDetail() {
     onOpenChange: () => toggleSection(id),
   })
 
-  const chipSubtitle = [chipFirmware.name, chipFirmware.spec, chipFirmware.program]
-    .filter(Boolean)
-    .join(' · ') || '未填写'
+  const chipSubtitle = chipFirmwares.length
+    ? chipFirmwares
+        .map((fw, i) => [fw.name, fw.program].filter(Boolean).join(' ') || `芯片${i + 1}`)
+        .join(' · ')
+    : '未填写'
 
   return (
     <div className="space-y-4">
       <PageBreadcrumb
         items={[
-          { label: '首页', to: '/' },
+          { label: '首页', to: getDashboardHomePath() },
           { label: order.name, to: `/order/${orderId}` },
           { label: sub.name },
         ]}
@@ -110,8 +113,8 @@ export default function SubProjectDetail() {
 
       <CollapsibleSection title="芯片固件" subtitle={chipSubtitle} {...sectionProps('chip')}>
         <ChipFirmwareSection
-          chipFirmware={chipFirmware}
-          onChange={(chipFirmware) => patch({ chipFirmware })}
+          items={chipFirmwares}
+          onChange={(chipFirmwares) => patch({ chipFirmwares })}
         />
       </CollapsibleSection>
 

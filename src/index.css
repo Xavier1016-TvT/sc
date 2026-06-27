@@ -39,7 +39,7 @@ body {
     @apply resize-y min-h-[2.5rem] leading-relaxed;
   }
   .material-table .textarea-compact {
-    @apply min-h-[36px] text-sm;
+    @apply min-h-[36px] text-sm resize-y;
   }
   .label-text {
     @apply block text-sm font-medium text-slate-600 mb-1;
@@ -51,7 +51,7 @@ body {
     @apply px-4 py-3 text-sm text-slate-700;
   }
   .material-table {
-    @apply w-full min-w-[1280px] text-sm;
+    @apply w-full min-w-[1520px] text-sm;
   }
   .material-table .table-th {
     @apply px-3 py-2.5 text-sm font-semibold text-slate-600 normal-case tracking-normal whitespace-nowrap;
